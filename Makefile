@@ -2,7 +2,7 @@
 all: library unittest testharness test
 
 #TODO: Determine automatically somehow
-HOST_PLATFORM = macosx
+HOST_PLATFORM = linux
 TARGET_PLATFORMS_macosx = macosx iphonesimulator iphoneos
 TARGET_PLATFORMS_linux = linux
 TARGET_PLATFORMS_windows = windows
@@ -20,7 +20,7 @@ APPLICATION_TARGETS = testharness
 TARGETS = ${LIBRARY_TARGETS} ${EXECUTABLE_TARGETS} ${APPLICATION_TARGETS}
 CONFIGURATIONS = debug profile release
 PLATFORMS = ${filter ${TARGET_PLATFORMS_${HOST_PLATFORM}},macosx iphonesimulator iphoneos linux windows}
-ARCHS = ppc i386 x86_64 armv6 armv7
+ARCHS = ppc i386 i686 x86_64 armv6 armv7
 
 TARGET_NAME_library = libstem_template
 TARGET_NAME_unittest = unittest
@@ -45,44 +45,39 @@ CCFLAGS_profile = -g -O3
 CCFLAGS_release = -O3
 
 #Per-platform compile/link settings
-CC_macosx_ppc = /usr/bin/gcc-4.2
-LD_macosx_ppc = /usr/bin/gcc-4.2
-CC_macosx_i386 = /Developer/usr/bin/clang
-LD_macosx_i386 = /Developer/usr/bin/clang
-CC_macosx_x86_64 = /Developer/usr/bin/clang
-LD_macosx_x86_64 = /Developer/usr/bin/clang
+CC_macosx_ppc = /usr/bin/gcc-4.2 -arch ppc
+CC_macosx_i386 = /Developer/usr/bin/clang -arch i386
+CC_macosx_x86_64 = /Developer/usr/bin/clang -arch x86_64
 AR_macosx = /usr/bin/ar
 RANLIB_macosx = /usr/bin/ranlib
 SDKROOT_macosx = /Developer/SDKs/MacOSX10.5.sdk
 ARCHS_macosx = ppc i386 x86_64
-CCFLAGS_macosx = -mmacosx-version-min=10.5
-LDFLAGS_macosx = -mmacosx-version-min=10.5
+CCFLAGS_macosx = -isysroot ${SDKROOT_macosx} -mmacosx-version-min=10.5
+LINKFLAGS_macosx = -isysroot ${SDKROOT_macosx} -mmacosx-version-min=10.5
 
-CC_iphonesimulator_i386 = /Developer/Platforms/iPhoneSimulator.platform/Developer/usr/bin/gcc-4.2
-LD_iphonesimulator_i386 = /Developer/Platforms/iPhoneSimulator.platform/Developer/usr/bin/gcc-4.2
+CC_iphonesimulator_i386 = /Developer/Platforms/iPhoneSimulator.platform/Developer/usr/bin/gcc-4.2 -arch i386
 AR_iphonesimulator = /Developer/Platforms/iPhoneSimulator.platform/Developer/usr/bin/ar
 RANLIB_iphonesimulator = /Developer/Platforms/iPhoneSimulator.platform/Developer/usr/bin/ranlib
 SDKROOT_iphonesimulator = /Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator3.0.sdk
 ARCHS_iphonesimulator = i386
-CFLAGS_iphonesimulator = -mmacosx-version-min=10.5 -D__IPHONE_OS_VERSION_MIN_REQUIRED=30000
-LDFLAGS_iphonesimulator = -mmacosx-version-min=10.5
+CCFLAGS_iphonesimulator = -isysroot ${SDKROOT_iphonesimulator} -mmacosx-version-min=10.5 -D__IPHONE_OS_VERSION_MIN_REQUIRED=30000
+LINKFLAGS_iphonesimulator = -isysroot ${SDKROOT_iphonesimulator} -mmacosx-version-min=10.5
 
-CC_iphoneos_armv6 = /Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/gcc-4.2
-LD_iphoneos_armv6 = /Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/gcc-4.2
-CC_iphoneos_armv7 = /Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/gcc-4.2
-LD_iphoneos_armv7 = /Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/gcc-4.2
+CC_iphoneos_armv6 = /Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/gcc-4.2 -arch armv6
+CC_iphoneos_armv7 = /Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/gcc-4.2 -arch armv7
 AR_iphoneos = /Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/ar
 RANLIB_iphoneos = /Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/ranlib
 SDKROOT_iphoneos = /Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS3.0.sdk
 ARCHS_iphoneos = armv6 armv7
-CCFLAGS_iphoneos = -miphoneos-version-min=3.0
-LDFLAGS_iphoneos = -miphoneos-version-min=3.0
+CCFLAGS_iphoneos = -isysroot ${SDKROOT_iphoneos} -miphoneos-version-min=3.0
+LINKFLAGS_iphoneos = -isysroot ${SDKROOT_iphoneos} -miphoneos-version-min=3.0
 
-CC_linux_i386 = /usr/bin/gcc
-LD_linux_i386 = /usr/bin/ld
-ARCHS_linux = i386
+CC_linux_i686 = /usr/bin/gcc
+AR_linux = /usr/bin/ar
+RANLIB_linux = /usr/bin/ranlib
+ARCHS_linux = i686
 CCFLAGS_linux = 
-LDFLAGS_linux = -lm
+LINKFLAGS_linux = -lm
 
 #General compile/link settings
 DEFINE_CCFLAGS = -DVERSION_MAJOR=${VERSION_MAJOR}u -DVERSION_MINOR=${VERSION_MINOR}u -DVERSION_TWEAK=${VERSION_TWEAK}u
@@ -91,10 +86,10 @@ INCLUDE_CCFLAGS = -I source
 OTHER_CCFLAGS = -std=gnu99
 CCFLAGS = ${DEFINE_CCFLAGS} ${WARNING_CCFLAGS} ${INCLUDE_CCFLAGS} ${OTHER_CCFLAGS}
 
-FRAMEWORK_LDFLAGS = 
-LIBRARY_LDFLAGS = 
-OTHER_LDFLAGS = 
-LDFLAGS = ${FRAMEWORK_LDFLAGS} ${LIBRARY_LDFLAGS} ${OTHER_LDFLAGS}
+FRAMEWORK_LINKFLAGS = 
+LIBRARY_LINKFLAGS = 
+OTHER_LINKFLAGS = 
+LINKFLAGS = ${FRAMEWORK_LINKFLAGS} ${LIBRARY_LINKFLAGS} ${OTHER_LINKFLAGS}
 
 #Per-target source file lists
 
@@ -146,7 +141,7 @@ ${foreach target,${TARGETS}, \
 define compile_template #(target, configuration, platform, arch, source_file)
 build/intermediate/${2}-${3}-${4}/${notdir ${basename ${5}}}.o: ${5}
 	mkdir -p build/intermediate/${2}-${3}-${4}
-	${CC_${3}_${4}} -isysroot ${SDKROOT_${3}} -arch ${4} ${CCFLAGS} ${CCFLAGS_${1}} ${CCFLAGS_${2}} ${CCFLAGS_${3}} -c -o $$@ $$^
+	${CC_${3}_${4}} ${CCFLAGS} ${CCFLAGS_${1}} ${CCFLAGS_${2}} ${CCFLAGS_${3}} -c -o $$@ $$^
 endef
 
 #Produces object build targets for all source files in each configuration/platform/arch
@@ -185,7 +180,7 @@ ${foreach target,${LIBRARY_TARGETS}, \
 
 define executable_template #(target, configuration, platform, arch, output_file, dependent_libraries)
 build/intermediate/${2}-${3}-${4}/${5}: ${call arch_object_list_template,${1},${2},${3},${4}} ${6}
-	${LD_${3}_${4}} -isysroot ${SDKROOT_${3}} ${LDFLAGS} ${LDFLAGS_${3}} -arch ${4} -o $$@ $$^
+	${CC_${3}_${4}} ${LINKFLAGS} ${LINKFLAGS_${3}} -o $$@ $$^
 endef
 
 #Produces executable build targets for each arch/platform/target for executable and application targets
@@ -236,32 +231,44 @@ ${foreach target,${APPLICATION_TARGETS}, \
 
 
 
-define assemble_library #(target, configuration, platform)
+define assemble_library_macosx #(target, configuration, platform)
 build/${1}/${2}-${3}/${TARGET_NAME_${1}}.a: ${THIN_BINARIES_${1}_${2}_${3}}
 	mkdir -p $${dir $$@}
 	lipo -create -output $$@ $$^
+endef
+
+define assemble_library_linux #(target, configuration, platform)
+build/${1}/${2}-${3}/${TARGET_NAME_${1}}.a: ${THIN_BINARIES_${1}_${2}_${3}}
+	mkdir -p $${dir $$@}
+	cp $$^ $$@
 endef
 
 #Produces final library build targets
 ${foreach target,${LIBRARY_TARGETS}, \
 	${foreach configuration,${CONFIGURATIONS_${target}}, \
 		${foreach platform,${PLATFORMS_${target}}, \
-			${eval ${call assemble_library,${target},${configuration},${platform}}} \
+			${eval ${call assemble_library_${HOST_PLATFORM},${target},${configuration},${platform}}} \
 		} \
 	} \
 }
 
-define assemble_executable #(target, configuration, platform)
+define assemble_executable_macosx #(target, configuration, platform)
 build/${1}/${2}-${3}/${TARGET_NAME_${1}}: ${THIN_BINARIES_${1}_${2}_${3}}
 	mkdir -p $${dir $$@}
 	lipo -create -output $$@ $$^
+endef
+
+define assemble_executable_linux #(target, configuration, platform)
+build/${1}/${2}-${3}/${TARGET_NAME_${1}}: ${THIN_BINARIES_${1}_${2}_${3}}
+	mkdir -p $${dir $$@}
+	cp $$^ $$@
 endef
 
 #Produces final executable build targets
 ${foreach target,${EXECUTABLE_TARGETS}, \
 	${foreach configuration,${CONFIGURATIONS_${target}}, \
 		${foreach platform,${PLATFORMS_${target}}, \
-			${eval ${call assemble_executable,${target},${configuration},${platform}}} \
+			${eval ${call assemble_executable_${HOST_PLATFORM},${target},${configuration},${platform}}} \
 		} \
 	} \
 }
@@ -278,7 +285,7 @@ PLIST_PLATFORM_CASED_iphoneos = iPhoneOS
 PLIST_PLATFORM_LOWER_iphoneos = iphoneos
 PLIST_SDK_NAME_iphoneos = iphoneos3.0
 
-define assemble_application #(target, configuration, platform)
+define assemble_application_macosx #(target, configuration, platform)
 build/${1}/${2}-${3}/${TARGET_NAME_${1}}.app/Contents/MacOS/${TARGET_NAME_${1}}: ${THIN_BINARIES_${1}_${2}_${3}}
 	mkdir -p $${dir $$@}
 	mkdir -p $${dir $$@}../Resources
@@ -294,40 +301,61 @@ build/${1}/${2}-${3}/${TARGET_NAME_${1}}.app/Contents/MacOS/${TARGET_NAME_${1}}:
 	lipo -create -output $$@ $$^
 endef
 
+define assemble_application_linux #(target, configuration, platform)
+build/${1}/${2}-${3}/${TARGET_NAME_${1}}: ${THIN_BINARIES_${1}_${2}_${3}}
+	mkdir -p $${dir $$@}
+	cp $$^ $$@
+endef
+
 #Produces final application build targets
 ${foreach target,${APPLICATION_TARGETS}, \
 	${foreach configuration,${CONFIGURATIONS_${target}}, \
 		${foreach platform,${PLATFORMS_${target}}, \
-			${eval ${call assemble_application,${target},${configuration},${platform}}} \
+			${eval ${call assemble_application_${HOST_PLATFORM},${target},${configuration},${platform}}} \
 		} \
 	} \
 }
 
-define library_target_template #(target)
+define library_target_template_macosx #(target)
 .PHONY: ${1}
 ${1}: ${foreach configuration,${CONFIGURATIONS_${1}},${foreach platform,${PLATFORMS_${1}},build/${1}/${configuration}-${platform}/${TARGET_NAME_${1}}.a}}
 endef
 
-define executable_target_template #(target)
+define library_target_template_linux #(target)
+.PHONY: ${1}
+${1}: ${foreach configuration,${CONFIGURATIONS_${1}},${foreach platform,${PLATFORMS_${1}},build/${1}/${configuration}-${platform}/${TARGET_NAME_${1}}.a}}
+endef
+
+define executable_target_template_macosx #(target)
 .PHONY: ${1}
 ${1}: ${foreach configuration,${CONFIGURATIONS_${1}},${foreach platform,${PLATFORMS_${1}},build/${1}/${configuration}-${platform}/${TARGET_NAME_${1}}}}
 endef
 
-define application_target_template #(target)
+define executable_target_template_linux #(target)
+.PHONY: ${1}
+${1}: ${foreach configuration,${CONFIGURATIONS_${1}},${foreach platform,${PLATFORMS_${1}},build/${1}/${configuration}-${platform}/${TARGET_NAME_${1}}}}
+endef
+
+define application_target_template_macosx #(target)
 .PHONY: ${1}
 ${1}: ${foreach configuration,${CONFIGURATIONS_${1}},${foreach platform,${PLATFORMS_${1}},build/${1}/${configuration}-${platform}/${TARGET_NAME_${1}}.app/Contents/MacOS/${TARGET_NAME_${1}}}}
 endef
 
+define application_target_template_linux #(target)
+.PHONY: ${1}
+${1}: ${foreach configuration,${CONFIGURATIONS_${1}},${foreach platform,${PLATFORMS_${1}},build/${1}/${configuration}-${platform}/${TARGET_NAME_${1}}}}
+endef
+
 ${foreach target,${LIBRARY_TARGETS}, \
-	${eval ${call library_target_template,${target}}} \
+	${eval ${call library_target_template_${HOST_PLATFORM},${target}}} \
 }
 
 ${foreach target,${EXECUTABLE_TARGETS}, \
-	${eval ${call executable_target_template,${target}}} \
+	${eval ${call executable_target_template_${HOST_PLATFORM},${target}}} \
 }
 
 ${foreach target,${APPLICATION_TARGETS}, \
-	${eval ${call application_target_template,${target}}} \
+	${eval ${call application_target_template_${HOST_PLATFORM},${target}}} \
 }
 
 .PHONY: test
@@ -342,6 +370,11 @@ run_unittests_iphonesimulator:
 	DYLD_ROOT_PATH=${SDKROOT_iphonesimulator} \
 	./build/unittest/debug-iphonesimulator/unittest
 
+.PHONY: run_unittests_linux
+run_unittests_linux:
+	./build/unittest/debug-linux/unittest
+
 .PHONY: clean
 clean:
 	rm -rf build
+
