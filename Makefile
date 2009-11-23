@@ -1,8 +1,15 @@
 .PHONY: all
 all: library unittest testharness test
 
-#TODO: Determine automatically somehow
+UNAME = ${shell uname}
+ifeq (${UNAME},Linux)
 HOST_PLATFORM = linux
+else ifeq (${UNAME},Darwin)
+HOST_PLATFORM = macosx
+else
+HOST_PLATFORM = windows
+endif
+
 TARGET_PLATFORMS_macosx = macosx iphonesimulator iphoneos
 TARGET_PLATFORMS_linux = linux
 TARGET_PLATFORMS_windows = windows
@@ -78,6 +85,13 @@ RANLIB_linux = /usr/bin/ranlib
 ARCHS_linux = i686
 CCFLAGS_linux = 
 LINKFLAGS_linux = -lm
+
+CC_windows_i686 = \\MinGW\\bin\\gcc.exe
+AR_windows = \\MinGW\\bin\\ar.exe
+RANLIB_windows = \\MinGW\\bin\\ranlib.exe
+ARCHS_windows = i686
+CCFLAGS_windows = 
+LINKFLAGS_windows = 
 
 #General compile/link settings
 DEFINE_CCFLAGS = -DVERSION_MAJOR=${VERSION_MAJOR}u -DVERSION_MINOR=${VERSION_MINOR}u -DVERSION_TWEAK=${VERSION_TWEAK}u
@@ -243,6 +257,12 @@ build/${1}/${2}-${3}/${TARGET_NAME_${1}}.a: ${THIN_BINARIES_${1}_${2}_${3}}
 	cp $$^ $$@
 endef
 
+define assemble_library_windows #(target, configuration, platform)
+build/${1}/${2}-${3}/${TARGET_NAME_${1}}.a: ${THIN_BINARIES_${1}_${2}_${3}}
+	mkdir -p $${dir $$@}
+	cp $$^ $$@
+endef
+
 #Produces final library build targets
 ${foreach target,${LIBRARY_TARGETS}, \
 	${foreach configuration,${CONFIGURATIONS_${target}}, \
@@ -260,6 +280,12 @@ endef
 
 define assemble_executable_linux #(target, configuration, platform)
 build/${1}/${2}-${3}/${TARGET_NAME_${1}}: ${THIN_BINARIES_${1}_${2}_${3}}
+	mkdir -p $${dir $$@}
+	cp $$^ $$@
+endef
+
+define assemble_executable_windows #(target, configuration, platform)
+build/${1}/${2}-${3}/${TARGET_NAME_${1}}.exe: ${THIN_BINARIES_${1}_${2}_${3}}
 	mkdir -p $${dir $$@}
 	cp $$^ $$@
 endef
@@ -307,6 +333,12 @@ build/${1}/${2}-${3}/${TARGET_NAME_${1}}: ${THIN_BINARIES_${1}_${2}_${3}}
 	cp $$^ $$@
 endef
 
+define assemble_application_windows #(target, configuration, platform)
+build/${1}/${2}-${3}/${TARGET_NAME_${1}}.exe: ${THIN_BINARIES_${1}_${2}_${3}}
+	mkdir -p $${dir $$@}
+	cp $$^ $$@
+endef
+
 #Produces final application build targets
 ${foreach target,${APPLICATION_TARGETS}, \
 	${foreach configuration,${CONFIGURATIONS_${target}}, \
@@ -326,6 +358,11 @@ define library_target_template_linux #(target)
 ${1}: ${foreach configuration,${CONFIGURATIONS_${1}},${foreach platform,${PLATFORMS_${1}},build/${1}/${configuration}-${platform}/${TARGET_NAME_${1}}.a}}
 endef
 
+define library_target_template_windows #(target)
+.PHONY: ${1}
+${1}: ${foreach configuration,${CONFIGURATIONS_${1}},${foreach platform,${PLATFORMS_${1}},build/${1}/${configuration}-${platform}/${TARGET_NAME_${1}}.a}}
+endef
+
 define executable_target_template_macosx #(target)
 .PHONY: ${1}
 ${1}: ${foreach configuration,${CONFIGURATIONS_${1}},${foreach platform,${PLATFORMS_${1}},build/${1}/${configuration}-${platform}/${TARGET_NAME_${1}}}}
@@ -336,6 +373,11 @@ define executable_target_template_linux #(target)
 ${1}: ${foreach configuration,${CONFIGURATIONS_${1}},${foreach platform,${PLATFORMS_${1}},build/${1}/${configuration}-${platform}/${TARGET_NAME_${1}}}}
 endef
 
+define executable_target_template_windows #(target)
+.PHONY: ${1}
+${1}: ${foreach configuration,${CONFIGURATIONS_${1}},${foreach platform,${PLATFORMS_${1}},build/${1}/${configuration}-${platform}/${TARGET_NAME_${1}}.exe}}
+endef
+
 define application_target_template_macosx #(target)
 .PHONY: ${1}
 ${1}: ${foreach configuration,${CONFIGURATIONS_${1}},${foreach platform,${PLATFORMS_${1}},build/${1}/${configuration}-${platform}/${TARGET_NAME_${1}}.app/Contents/MacOS/${TARGET_NAME_${1}}}}
@@ -344,6 +386,11 @@ endef
 define application_target_template_linux #(target)
 .PHONY: ${1}
 ${1}: ${foreach configuration,${CONFIGURATIONS_${1}},${foreach platform,${PLATFORMS_${1}},build/${1}/${configuration}-${platform}/${TARGET_NAME_${1}}}}
+endef
+
+define application_target_template_windows #(target)
+.PHONY: ${1}
+${1}: ${foreach configuration,${CONFIGURATIONS_${1}},${foreach platform,${PLATFORMS_${1}},build/${1}/${configuration}-${platform}/${TARGET_NAME_${1}}.exe}}
 endef
 
 ${foreach target,${LIBRARY_TARGETS}, \
@@ -373,6 +420,10 @@ run_unittests_iphonesimulator:
 .PHONY: run_unittests_linux
 run_unittests_linux:
 	./build/unittest/debug-linux/unittest
+
+.PHONY: run_unittests_windows
+run_unittests_windows:
+	./build/unittest/debug-windows/unittest.exe
 
 .PHONY: clean
 clean:
