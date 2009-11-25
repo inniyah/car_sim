@@ -322,7 +322,7 @@ build/${1}/${2}-${3}/${TARGET_NAME_${1}}.app/Contents/MacOS/${TARGET_NAME_${1}}:
 	    -e "s/\$$$${PLATFORM_CASED}/${PLIST_PLATFORM_CASED_${3}}/g" \
 	    -e "s/\$$$${PLATFORM_LOWER}/${PLIST_PLATFORM_LOWER_${3}}/g" \
 	    -e "s/\$$$${SDK}/${PLIST_SDK_NAME_${3}}/g" \
-	    ${PLIST_FILE_${1}_${3}} > ${dir $$@}/../Info.plist
+	    ${PLIST_FILE_${1}_${3}} > $${dir $$@}/../Info.plist
 	echo "APPL????" > $${dir $$@}../PkgInfo
 	lipo -create -output $$@ $$^
 endef
