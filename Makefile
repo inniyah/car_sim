@@ -1,5 +1,5 @@
 .PHONY: all
-all: library unittest testharness test
+all: library unittest testharness test include
 
 UNAME = ${shell uname}
 ifeq (${UNAME},Linux)
@@ -16,10 +16,10 @@ TARGET_PLATFORMS_windows = windows
 
 include version
 
-PROJECT_NAME = stemlib_template
+PROJECT_NAME = template_stemlib
 IPHONESIMULATOR_APPLICATIONS_DIR = ${HOME}/Library/Application Support/iPhone Simulator/User/Applications
-
 CODESIGN_IDENTITY = "iPhone Developer"
+SVNROOT = http://sacredsoftware.net/svn/misc
 
 LIBRARY_TARGETS = library
 EXECUTABLE_TARGETS = unittest
@@ -425,7 +425,27 @@ run_unittests_linux:
 run_unittests_windows:
 	./build/unittest/debug-windows/unittest.exe
 
+.PHONY: include
+include: ${INCLUDES}
+	mkdir -p build/include
+	cp $^ build/include
+
+.PHONY: full_dist
+full_dist: clean all
+	mkdir dist
+	cp -r build/include build/library build/testharness dist
+	svn import -m "Automated release from ${HOST_PLATFORM}" dist ${SVNROOT}/Releases/${PROJECT_NAME}/${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_TWEAK}
+
+.PHONY: append_dist
+append_dist: clean all
+	svn co ${SVNROOT}/Releases/${PROJECT_NAME}/${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_TWEAK} dist_append
+	cp -r build/library/ dist_append/library
+	cp -r build/testharness/ dist_append/testharness
+	svn add dist_append/library/* dist_append/testharness/*
+	svn commit -m "Automated release append from ${HOST_PLATFORM}" dist_append
+
 .PHONY: clean
 clean:
 	rm -rf build
-
+	rm -rf dist
+	rm -rf dist_append
