@@ -432,16 +432,17 @@ include: ${INCLUDES}
 
 .PHONY: full_dist
 full_dist: clean all
-	mkdir dist
-	cp -r build/include build/library build/testharness dist
-	svn import -m "Automated release from ${HOST_PLATFORM}" dist ${SVNROOT}/Releases/${PROJECT_NAME}/${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_TWEAK}
+	mkdir dist dist/library dist/testharness
+	cp -r build/library/* dist/library
+	cp -r build/testharness/* dist/testharness
+	svn import --no-ignore -m "Automated release from ${HOST_PLATFORM}" dist ${SVNROOT}/Releases/${PROJECT_NAME}/${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_TWEAK}
 
 .PHONY: append_dist
 append_dist: clean all
 	svn co ${SVNROOT}/Releases/${PROJECT_NAME}/${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_TWEAK} dist_append
-	cp -r build/library/ dist_append/library
-	cp -r build/testharness/ dist_append/testharness
-	svn add dist_append/library/* dist_append/testharness/*
+	cp -r build/library/* dist_append/library
+	cp -r build/testharness/* dist_append/testharness
+	svn add --no-ignore dist_append/library/* dist_append/testharness/*
 	svn commit -m "Automated release append from ${HOST_PLATFORM}" dist_append
 
 .PHONY: clean
