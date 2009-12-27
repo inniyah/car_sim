@@ -44,7 +44,7 @@ PLATFORMS_unittest = ${filter ${PLATFORMS},macosx iphonesimulator linux windows}
 PLATFORMS_testharness = ${filter ${PLATFORMS},macosx iphonesimulator iphoneos linux windows}
 
 #Per-target compile/link settings
-CCFLAGS_unittest = -I test_source
+CCFLAGS_unittest = -I test_source -DSUITE_FILE_LIST='${foreach file,${SOURCES_unittest_suites},"${basename ${notdir ${file}}}",} NULL'
 
 #Per-configuration compile/link settings
 CCFLAGS_debug = -g
@@ -84,7 +84,7 @@ AR_linux = /usr/bin/ar
 RANLIB_linux = /usr/bin/ranlib
 ARCHS_linux = i686
 CCFLAGS_linux = 
-LINKFLAGS_linux = -lm
+LINKFLAGS_linux = -lm -ldl -Wl,-E
 
 CC_windows_i686 = \\MinGW\\bin\\gcc.exe
 AR_windows = \\MinGW\\bin\\ar.exe
@@ -105,6 +105,11 @@ LIBRARY_LINKFLAGS =
 OTHER_LINKFLAGS = 
 LINKFLAGS = ${FRAMEWORK_LINKFLAGS} ${LIBRARY_LINKFLAGS} ${OTHER_LINKFLAGS}
 
+#Per-target depencies
+
+LIBRARY_DEPENDENCIES_unittest =
+LIBRARY_DEPENDENCIES_testharness =
+
 #Per-target source file lists
 
 SOURCES_library = \
@@ -112,13 +117,16 @@ SOURCES_library = \
 
 SOURCES_unittest = \
 	test_source/unittest/framework/unittest_main.c \
-	test_source/unittest/suites/HelloWorldTest.c \
-	test_source/unittest/TestList.c
+	test_source/unittest/framework/TestList.c \
+	${SOURCES_unittest_suites}
+
+SOURCES_unittest_suites = \
+	test_source/unittest/suites/HelloWorldTest.c
 
 SOURCES_testharness = \
 	test_source/testharness/TestHarness_main.c
 
-SOURCES = ${sort ${SOURCES_library} ${SOURCES_unittest} ${SOURCES_testharness}}
+SOURCES = ${sort ${foreach target,${TARGETS},${SOURCES_${target}}}}
 
 INCLUDES = \
 	source/HelloWorld.h
@@ -197,12 +205,19 @@ build/intermediate/${2}-${3}-${4}/${5}: ${call arch_object_list_template,${1},${
 	${CC_${3}_${4}} ${LINKFLAGS} ${LINKFLAGS_${3}} -o $$@ $$^
 endef
 
+define library_dependency_template #(target, configuration, platform)
+	build/library/debug-${3}/${TARGET_NAME_library}.a \
+	${foreach library,${LIBRARY_DEPENDENCIES_${1}}, \
+		lib/${dir ${library}}${configuration}-${platform}/${notdir ${library}} \
+	}
+endef
+
 #Produces executable build targets for each arch/platform/target for executable and application targets
 ${foreach target,${EXECUTABLE_TARGETS} ${APPLICATION_TARGETS}, \
 	${foreach configuration,${CONFIGURATIONS_${target}}, \
 		${foreach platform,${PLATFORMS_${target}}, \
 			${foreach arch,${ARCHS_${platform}}, \
-				${eval ${call executable_template,${target},${configuration},${platform},${arch},${TARGET_NAME_${target}},build/library/debug-${platform}/${TARGET_NAME_library}.a}} \
+				${eval ${call executable_template,${target},${configuration},${platform},${arch},${TARGET_NAME_${target}},${call library_dependency_template,${target},${configuration},${platform}}}} \
 			} \
 		} \
 	} \
@@ -432,7 +447,8 @@ include: ${INCLUDES}
 
 .PHONY: full_dist
 full_dist: clean all
-	mkdir dist dist/library dist/testharness
+	mkdir dist dist/include dist/library dist/testharness
+	cp -r build/include/* dist/include
 	cp -r build/library/* dist/library
 	cp -r build/testharness/* dist/testharness
 	svn import --no-ignore -m "Automated release from ${HOST_PLATFORM}" dist ${SVNROOT}/Releases/${PROJECT_NAME}/${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_TWEAK}
