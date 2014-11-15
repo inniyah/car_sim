@@ -2,7 +2,12 @@ PROGRAM=test
 
 all: $(PROGRAM)
 
-SRCS = MainGtk3App.cpp Sdl2App.cpp Threads.cpp main.cpp
+SRCS = \
+	core/MainGtk3App.cpp \
+	core/Sdl2App.cpp \
+	core/Threads.cpp \
+	core/main.cpp
+
 OBJS = $(SRCS:.cpp=.o)
 
 PKG_CONFIG=gtk+-3.0 sdl2
@@ -38,5 +43,8 @@ clean:
 	rm -f $(OBJS)
 	rm -f $(PROGRAM)
 	rm -f *.o *.a *~
+
+clean-all: clean
+	$(MAKE) -C slmath clean
 
 .PHONY: all depend dep clean install

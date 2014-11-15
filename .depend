@@ -1,4 +1,4 @@
-MainGtk3App.o: MainGtk3App.cpp MainGtk3App.h ISdl2App.h \
+MainGtk3App.o: core/MainGtk3App.cpp core/MainGtk3App.h core/ISdl2App.h \
  /usr/include/gtk-3.0/gtk/gtk.h /usr/include/gtk-3.0/gdk/gdk.h \
  /usr/include/gtk-3.0/gdk/gdkconfig.h /usr/include/glib-2.0/glib.h \
  /usr/include/glib-2.0/glib/galloca.h /usr/include/glib-2.0/glib/gtypes.h \
@@ -564,17 +564,17 @@ MainGtk3App.o: MainGtk3App.cpp MainGtk3App.h ISdl2App.h \
  /usr/include/gtk-3.0/gdk/x11/gdkx11utils.h \
  /usr/include/gtk-3.0/gdk/x11/gdkx11visual.h \
  /usr/include/gtk-3.0/gdk/x11/gdkx11window.h
-Sdl2App.o: Sdl2App.cpp Sdl2App.h ISdl2App.h slmath/include/slm/mat4.h \
- slmath/include/slm/vec4.h slmath/include/slm/vec3.h \
- slmath/include/slm/vec2.h slmath/include/slm/vec_impl.h \
- slmath/include/slm/float_util.h slmath/include/slm/slmath_pp.h \
- slmath/include/slm/slmath_configure.h slmath/include/slm/simd.h \
- slmath/include/slm/float_util.inl slmath/include/slm/vec2.inl \
- slmath/include/slm/vec3.inl slmath/include/slm/vec4.inl \
- slmath/include/slm/mat4.inl slmath/include/slm/quat.h \
- slmath/include/slm/quat.inl Threads.h
-Threads.o: Threads.cpp Threads.h
-main.o: main.cpp MainGtk3App.h Sdl2App.h ISdl2App.h \
+Sdl2App.o: core/Sdl2App.cpp core/Sdl2App.h core/ISdl2App.h \
+ slmath/include/slm/mat4.h slmath/include/slm/vec4.h \
+ slmath/include/slm/vec3.h slmath/include/slm/vec2.h \
+ slmath/include/slm/vec_impl.h slmath/include/slm/float_util.h \
+ slmath/include/slm/slmath_pp.h slmath/include/slm/slmath_configure.h \
+ slmath/include/slm/simd.h slmath/include/slm/float_util.inl \
+ slmath/include/slm/vec2.inl slmath/include/slm/vec3.inl \
+ slmath/include/slm/vec4.inl slmath/include/slm/mat4.inl \
+ slmath/include/slm/quat.h slmath/include/slm/quat.inl core/Threads.h
+Threads.o: core/Threads.cpp core/Threads.h
+main.o: core/main.cpp core/MainGtk3App.h core/Sdl2App.h core/ISdl2App.h \
  slmath/include/slm/mat4.h slmath/include/slm/vec4.h \
  slmath/include/slm/vec3.h slmath/include/slm/vec2.h \
  slmath/include/slm/vec_impl.h slmath/include/slm/float_util.h \
