@@ -1,8 +1,7 @@
 #include "Sdl2App.h"
 #include "Threads.h"
 
-#include "GL/gl.h"
-#include "GL/glu.h"
+#define LOGO_BMP "data/sdl_logo.bmp"
 
 struct Sdl2AppThread : public ThreadBase {
 	Sdl2AppThread(Sdl2App * app) : App(app), KeepRunning(true) {
@@ -80,17 +79,18 @@ void Sdl2App::init(SDL_Window * sdl_window, int w, int h) {
 		mpSdlRenderer = SDL_CreateRenderer(mxSdlWindow, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
 	}
 
-	mSdlGlContext = SDL_GL_CreateContext(mxSdlWindow);
-	if (!mSdlGlContext) {
-		fprintf(stderr, "SDL_GL_CreateContext(): %s\n", SDL_GetError());
-	}
-
-	initGl();
+	mpSdlImage = SDL_LoadBMP( LOGO_BMP );
+	mpSdlTexture = SDL_CreateTextureFromSurface(mpSdlRenderer, mpSdlImage);
 }
 
 void Sdl2App::destroy() {
-	if (mSdlGlContext) {
-		SDL_GL_DeleteContext(mSdlGlContext);
+	if (NULL != mpSdlImage) {
+		SDL_FreeSurface (mpSdlImage);
+		mpSdlImage = NULL;
+	}
+	if (NULL != mpSdlTexture) {
+		SDL_DestroyTexture (mpSdlTexture);
+		mpSdlTexture = NULL;
 	}
 	if (NULL != mpSdlRenderer) {
 		SDL_DestroyRenderer (mpSdlRenderer);
@@ -100,175 +100,16 @@ void Sdl2App::destroy() {
 	mxSdlWindow = NULL;
 }
 
-void Sdl2App::initGl() {
-	SDL_DisplayMode mode;
-	SDL_GetCurrentDisplayMode(0, &mode);
-	printf("Screen BPP: %d\n", SDL_BITSPERPIXEL(mode.format));
-	printf("\n");
-	printf("Vendor     : %s\n", glGetString(GL_VENDOR));
-	printf("Renderer   : %s\n", glGetString(GL_RENDERER));
-	printf("Version    : %s\n", glGetString(GL_VERSION));
-	printf("Extensions : %s\n", glGetString(GL_EXTENSIONS));
-	printf("\n");
-
-	int status;
-	int value;
-
-    status = SDL_GL_GetAttribute(SDL_GL_RED_SIZE, &value);
-    if (!status) {
-        printf("SDL_GL_RED_SIZE: %d\n", value);
-    } else {
-        printf("Failed to get SDL_GL_RED_SIZE: %s\n", SDL_GetError());
-    }
-    status = SDL_GL_GetAttribute(SDL_GL_GREEN_SIZE, &value);
-    if (!status) {
-        printf("SDL_GL_GREEN_SIZE: %d\n", value);
-    } else {
-        printf("Failed to get SDL_GL_GREEN_SIZE: %s\n", SDL_GetError());
-    }
-    status = SDL_GL_GetAttribute(SDL_GL_BLUE_SIZE, &value);
-    if (!status) {
-        printf("SDL_GL_BLUE_SIZE: %d\n", value);
-    } else {
-        printf("Failed to get SDL_GL_BLUE_SIZE: %s\n", SDL_GetError());
-    }
-    status = SDL_GL_GetAttribute(SDL_GL_DEPTH_SIZE, &value);
-    if (!status) {
-        printf("SDL_GL_DEPTH_SIZE: %d\n", value);
-    } else {
-        printf("Failed to get SDL_GL_DEPTH_SIZE: %s\n", SDL_GetError());
-    }
-
-	status = SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &value);
-	if (!status) {
-		printf("SDL_GL_MULTISAMPLEBUFFERS: %d\n", value);
-	} else {
-		printf("Failed to get SDL_GL_MULTISAMPLEBUFFERS: %s\n", SDL_GetError());
-	}
-	status = SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &value);
-	if (!status) {
-		printf("SDL_GL_MULTISAMPLESAMPLES: %d\n", value);
-	} else {
-		printf("Failed to get SDL_GL_MULTISAMPLESAMPLES: %s\n", SDL_GetError());
-	}
-
-	status = SDL_GL_GetAttribute(SDL_GL_ACCELERATED_VISUAL, &value);
-	if (!status) {
-		printf("SDL_GL_ACCELERATED_VISUAL: %d\n", value);
-	} else {
-		printf("Failed to get SDL_GL_ACCELERATED_VISUAL: %s\n", SDL_GetError());
-	}
-
-	/* Set rendering settings */
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(-2.0, 2.0, -2.0, 2.0, -20.0, 20.0);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LESS);
-	glShadeModel(GL_SMOOTH);
-}
-
-void Sdl2App::renderGl() {
-
-    static float color[8][3] = {
-        {1.0, 1.0, 0.0},
-        {1.0, 0.0, 0.0},
-        {0.0, 0.0, 0.0},
-        {0.0, 1.0, 0.0},
-        {0.0, 1.0, 1.0},
-        {1.0, 1.0, 1.0},
-        {1.0, 0.0, 1.0},
-        {0.0, 0.0, 1.0}
-    };
-
-    static float cube[8][3] = {
-        {0.5, 0.5, -0.5},
-        {0.5, -0.5, -0.5},
-        {-0.5, -0.5, -0.5},
-        {-0.5, 0.5, -0.5},
-        {-0.5, 0.5, 0.5},
-        {0.5, 0.5, 0.5},
-        {0.5, -0.5, 0.5},
-        {-0.5, -0.5, 0.5}
-    };
-
-    glClearColor(0.0, 0.0, 0.0, 1.0);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    glBegin(GL_QUADS);
-
-    glColor3fv(color[0]);
-    glVertex3fv(cube[0]);
-    glColor3fv(color[1]);
-    glVertex3fv(cube[1]);
-    glColor3fv(color[2]);
-    glVertex3fv(cube[2]);
-    glColor3fv(color[3]);
-    glVertex3fv(cube[3]);
-
-    glColor3fv(color[3]);
-    glVertex3fv(cube[3]);
-    glColor3fv(color[4]);
-    glVertex3fv(cube[4]);
-    glColor3fv(color[7]);
-    glVertex3fv(cube[7]);
-    glColor3fv(color[2]);
-    glVertex3fv(cube[2]);
-
-    glColor3fv(color[0]);
-    glVertex3fv(cube[0]);
-    glColor3fv(color[5]);
-    glVertex3fv(cube[5]);
-    glColor3fv(color[6]);
-    glVertex3fv(cube[6]);
-    glColor3fv(color[1]);
-    glVertex3fv(cube[1]);
-
-    glColor3fv(color[5]);
-    glVertex3fv(cube[5]);
-    glColor3fv(color[4]);
-    glVertex3fv(cube[4]);
-    glColor3fv(color[7]);
-    glVertex3fv(cube[7]);
-    glColor3fv(color[6]);
-    glVertex3fv(cube[6]);
-
-    glColor3fv(color[5]);
-    glVertex3fv(cube[5]);
-    glColor3fv(color[0]);
-    glVertex3fv(cube[0]);
-    glColor3fv(color[3]);
-    glVertex3fv(cube[3]);
-    glColor3fv(color[4]);
-    glVertex3fv(cube[4]);
-
-    glColor3fv(color[6]);
-    glVertex3fv(cube[6]);
-    glColor3fv(color[1]);
-    glVertex3fv(cube[1]);
-    glColor3fv(color[2]);
-    glVertex3fv(cube[2]);
-    glColor3fv(color[7]);
-    glVertex3fv(cube[7]);
-
-    glEnd();
-
-    glMatrixMode(GL_MODELVIEW);
-    glRotatef(5.0, 1.0, 1.0, 1.0);
-}
-
 void Sdl2App::draw() {
-	if (mSdlGlContext) {
-		int w, h;
-		SDL_GL_MakeCurrent(mxSdlWindow, mSdlGlContext);
-		SDL_GetWindowSize(mxSdlWindow, &w, &h);
-		glViewport(0, 0, w, h);
+	SDL_Rect dest_rect;
+	dest_rect.w = mpSdlImage->w;
+	dest_rect.h = mpSdlImage->h;
+	dest_rect.x = miScreenWidth / 2 - mpSdlImage->w / 2;
+	dest_rect.y = miScreenHeight / 2 - mpSdlImage->h / 2;
 
-		renderGl();
-		SDL_GL_SwapWindow(mxSdlWindow);
-	}
+	SDL_RenderClear(mpSdlRenderer);
+	SDL_RenderCopy(mpSdlRenderer, mpSdlTexture, NULL, &dest_rect);
+	SDL_RenderPresent(mpSdlRenderer);
 
 	int delta = SDL_GetTicks() - miStartClock;
 	miStartClock = SDL_GetTicks();

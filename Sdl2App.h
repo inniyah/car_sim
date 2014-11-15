@@ -35,13 +35,12 @@ class Sdl2App : public ISdl2App {
 		void processKeyboardKey(int code, bool isdown);
 		void processQuitRequest();
 
-		void initGl();
-		void renderGl();
-
 	private:
 		SDL_Window * mxSdlWindow;
 		SDL_Renderer * mpSdlRenderer;
-		SDL_GLContext mSdlGlContext;
+
+		SDL_Surface * mpSdlImage;
+		SDL_Texture * mpSdlTexture;
 
 		int miScreenWidth;
 		int miScreenHeight;

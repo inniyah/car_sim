@@ -5,7 +5,7 @@ all: $(PROGRAM)
 SRCS = MainGtk3App.cpp Sdl2App.cpp Threads.cpp main.cpp
 OBJS = $(SRCS:.cpp=.o)
 
-PKG_CONFIG=gtk+-3.0 sdl2 gtkglext-3.0 gdkglext-3.0
+PKG_CONFIG=gtk+-3.0 sdl2
 PKG_CONFIG_CFLAGS=`pkg-config --cflags $(PKG_CONFIG)`
 PKG_CONFIG_LIBS=`pkg-config --libs $(PKG_CONFIG)`
 

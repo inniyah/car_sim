@@ -407,7 +407,7 @@ void Sdl2Canvas::setup(GApplication * app) {
 
 	GdkWindow *gdk_window = gtk_widget_get_window(priv->sdl_area);
 	Window x11_window = gdk_x11_window_get_xid(GDK_X11_WINDOW(gdk_window));
-	priv->sdl_window = SDL_CreateWindowWithFlagsFrom((const void*)x11_window, SDL_WINDOW_OPENGL);
+	priv->sdl_window = SDL_CreateWindowFrom((const void*)x11_window);
 
 	priv->sdl_app->init(
 		priv->sdl_window,
