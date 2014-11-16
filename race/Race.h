@@ -38,6 +38,12 @@ public:
 	int lapflag, crashflag;
 	int color;
 
+	void resetTimer() {
+		time_ms = 0;
+	}
+	void updateTimer(unsigned int milliseconds) {
+		time_ms += milliseconds;
+	}
 	void setSize(int w, int h) {
 		width  = w;
 		height = h;
@@ -47,7 +53,7 @@ public:
 		y_pos = y;
 		angle = a;
 	}
-	void computeNewPosition() {
+	void computeNewPosition(unsigned int milliseconds) {
 		speed *= 0.995;
 		x_pos -= cos(angle) * speed;
 		y_pos -= sin(angle) * speed;
@@ -108,6 +114,9 @@ public:
 	float getSpeed() {
 		return speed;
 	}
+	unsigned int getTimer() {
+		return time_ms;
+	}
 
 	void drawBrakeLights(SDL_Renderer * renderer);
 	void drawReversingLights(SDL_Renderer * renderer);
@@ -136,6 +145,8 @@ private:
 	float old_x;
 	float old_y;
 	float old_angle;
+
+	unsigned int time_ms;
 };
 
 struct Track {
@@ -205,7 +216,7 @@ private:
 	bool mRightKey;
 
 	void generateCars();
-	void moveCar();
+	void moveCar(unsigned int milliseconds);
 	void darkenTrack(SDL_Surface * surface, float coef = 0.3);
 };
 

@@ -219,6 +219,7 @@ void Race::startTrack(int id) {
 	car.setSize( mpaSdlSurfaceCars[0][0]->w, mpaSdlSurfaceCars[0][0]->h);
 	car.setPosition( track[miTrackId].start_x, track[miTrackId].start_y, track[miTrackId].start_a * 2. * M_PI / 360. );
 	car.setSpeed(0);
+	car.resetTimer();
 	car.backupPosition();
 
 	car.lastcheck = 0;
@@ -364,7 +365,7 @@ bool Race::draw() {
 	return true;
 }
 
-void Race::moveCar() {
+void Race::moveCar(unsigned int milliseconds) {
 	Uint32 c;
 	Uint8 r,g,b;
 
@@ -402,7 +403,8 @@ void Race::moveCar() {
 
 	// save the old position and compute the new one
 	car.backupPosition();
-	car.computeNewPosition();
+	car.computeNewPosition(milliseconds);
+	car.updateTimer(milliseconds);
 
 	// collision with the border of the screen
 	if (
@@ -445,27 +447,25 @@ void Race::moveCar() {
 
 unsigned int Race::update(unsigned int milliseconds) {
 	while ( milliseconds > 8 ) {
-		moveCar();
-
-    switch (car.lapflag) {
-      case 1: // if we completed a lap
-        printInfoLog("Lap Complete");
-        car.lapflag=0;
-        break;
-      case 2: // if we completed an incomplete lap
-        printInfoLog("Last Lap Canceled");
-        car.lapflag=0;
-        break;
-      case 3: // if we miss a checkpoint
-        printInfoLog("Checkpoint missed!");
-        break;
-      case 4: // if we validate a missed checkpoint
-        printInfoLog("Checkpoint missed OK");
-        break;
-      default: // nothing
-        break;
-    }
-
+		moveCar(8);
+		switch (car.lapflag) {
+			case 1: // if we completed a lap
+				printInfoLog("Lap Complete");
+				car.lapflag=0;
+				break;
+			case 2: // if we completed an incomplete lap
+				printInfoLog("Last Lap Canceled");
+				car.lapflag=0;
+				break;
+			case 3: // if we miss a checkpoint
+				printInfoLog("Checkpoint missed!");
+				break;
+			case 4: // if we validate a missed checkpoint
+				printInfoLog("Checkpoint missed OK");
+				break;
+			default: // nothing
+				break;
+		}
 		milliseconds -= 8;
 	}
 	return milliseconds;
