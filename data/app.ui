@@ -19,7 +19,7 @@
               <placeholder/>
             </child>
             <child>
-              <object class="GtkDrawingArea" id="sdl2">
+              <object class="GtkDrawingArea" id="sdl">
                 <property name="width_request">1024</property>
                 <property name="height_request">768</property>
                 <property name="visible">True</property>

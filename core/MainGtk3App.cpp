@@ -15,10 +15,11 @@
 
 #define UI_FILE "data/app.ui"
 
-#define TOP_WINDOW    "window"
-#define SDL_AREA      "sdl2"
-#define LOG_TEXTAREA  "log"
-#define LOG_MAXLENGTH 256
+#define ID_TOP_WINDOW   "window"
+#define ID_SDL_WIDGET   "sdl"
+#define ID_LOG_WIDGET   "log"
+
+#define LOG_MAXLENGTH     256
 
 G_BEGIN_DECLS
 
@@ -73,10 +74,11 @@ G_DEFINE_TYPE(MainApp, main_app, GTK_TYPE_APPLICATION);
 #define MAIN_APP_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MAIN_APP_TYPE, MainAppPrivateData))
 
 struct MainAppPrivateData {
-	GtkWidget * sdl_area;
+	GtkWidget *    sdl_widget;
+	GtkWidget *    log_widget;
 
-	SDL_Window * sdl_window;
-	ISdl2App * sdl_app;
+	SDL_Window *   sdl_window;
+	ISdl2App   *   sdl_app;
 
 	guint idle_handler;
 };
@@ -89,6 +91,33 @@ gboolean MainApp::draw(gpointer user_data) {
 	return TRUE;
 }
 
+static void appendTextToWidget(GtkWidget * widget, gchar * text, bool new_line = true) {
+	GtkTextBuffer *buffer;
+	GtkTextMark *mark;
+	GtkTextIter iter;
+
+	/* Returns the GtkTextBuffer being displayed by this text view. */
+	buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(widget));
+
+	/* Returns the mark that represents the cursor (insertion point). */
+	mark = gtk_text_buffer_get_insert(buffer);
+
+	/* Initializes iter with the current position of mark. */
+	gtk_text_buffer_get_iter_at_mark(buffer, &iter, mark);
+
+	/* Inserts buffer at position iter. */
+	gtk_text_buffer_insert(buffer, &iter, text, -1);
+
+	if (new_line) {
+		gtk_text_buffer_insert(buffer, &iter, "\n", -1);
+	}
+
+	/* Scrolls text_view the minimum distance such that mark is contained within the visible area of the widget. */
+	gtk_text_view_scroll_mark_onscreen(GTK_TEXT_VIEW(widget), mark);  
+}
+
+GtkWidget * global_log_widget = NULL;
+
 void printLog(const char* fmt, ...) {
 	char buff[LOG_MAXLENGTH];
 	va_list args;
@@ -96,7 +125,9 @@ void printLog(const char* fmt, ...) {
 	vsnprintf(buff, sizeof(buff), fmt, args);
 	va_end(args);
 	buff[sizeof(buff) - 1] = '\0';
+
 	puts(buff);
+	appendTextToWidget(global_log_widget, buff);
 }
 
 // https://git.gnome.org/browse/gtk+/plain/gdk/gdkkeysyms.h
@@ -419,19 +450,26 @@ gboolean Sdl2Area::eventFocus(GtkWidget *widget, GdkEventFocus *focus, gpointer 
 	return TRUE;
 }
 
-
-
 void MainApp::setup(GApplication * app) {
 	MainAppPrivateData *priv = MAIN_APP_GET_PRIVATE(app);
 
-	GdkWindow *gdk_window = gtk_widget_get_window(priv->sdl_area);
+	GdkWindow *gdk_window = gtk_widget_get_window(priv->sdl_widget);
 	Window x11_window = gdk_x11_window_get_xid(GDK_X11_WINDOW(gdk_window));
 	priv->sdl_window = SDL_CreateWindowFrom((const void*)x11_window);
 
+	const gchar * log_text = "Starting system...\n";
+	GtkTextBuffer * log_buffer;
+	// disable the text view while loading the buffer with the text
+	gtk_widget_set_sensitive(priv->log_widget, FALSE);
+	log_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(priv->log_widget));
+	gtk_text_buffer_set_text(log_buffer, log_text, -1);
+	gtk_text_buffer_set_modified(log_buffer, FALSE);
+	gtk_widget_set_sensitive(priv->log_widget, TRUE);
+
 	priv->sdl_app->init(
 		priv->sdl_window,
-		gtk_widget_get_allocated_width(priv->sdl_area),
-		gtk_widget_get_allocated_height(priv->sdl_area)
+		gtk_widget_get_allocated_width(priv->sdl_widget),
+		gtk_widget_get_allocated_height(priv->sdl_widget)
 	);
 	priv->idle_handler = g_timeout_add(1000/FPS, MainApp::draw, (gpointer)app);
 }
@@ -458,22 +496,30 @@ void MainApp::createFromFile(GApplication * app, GFile * file) {
 	gtk_builder_connect_signals(builder, app);
 
 	/* Get the window object from the ui file */
-	window = GTK_WIDGET(gtk_builder_get_object(builder, TOP_WINDOW));
+	window = GTK_WIDGET(gtk_builder_get_object(builder, ID_TOP_WINDOW));
 	if (!window) {
 		g_critical("Widget \"%s\" is missing in file %s.",
-			TOP_WINDOW,
+			ID_TOP_WINDOW,
 			UI_FILE);
 	}
 
-	priv->sdl_area = GTK_WIDGET(gtk_builder_get_object(builder, SDL_AREA));
+	priv->sdl_widget = GTK_WIDGET(gtk_builder_get_object(builder, ID_SDL_WIDGET));
+	priv->log_widget = GTK_WIDGET(gtk_builder_get_object(builder, ID_LOG_WIDGET));
 
-	GtkWidget * sdl_widget = GTK_WIDGET(priv->sdl_area);
-	GObject   * sdl_object = G_OBJECT(priv->sdl_area);
-	GdkWindow * sdl_window = gtk_widget_get_window(priv->sdl_area);
+	global_log_widget = priv->log_widget;
+
+	/* set the log view font */
+	PangoFontDescription * font_desc = pango_font_description_from_string ("monospace 10");
+	gtk_widget_override_font(priv->log_widget, font_desc);     
+	pango_font_description_free (font_desc); 
+
+	GtkWidget * sdl_widget = GTK_WIDGET(priv->sdl_widget);
+	GObject   * sdl_object = G_OBJECT(priv->sdl_widget);
+	GdkWindow * sdl_window = gtk_widget_get_window(priv->sdl_widget);
 
 	// https://developer.gnome.org/gtk3/stable/GtkWidget.html
 
-	if ( g_signal_connect(sdl_object, "window-state-event",    G_CALLBACK(Sdl2Area::eventWindowState), app) <= 0 )
+	if ( g_signal_connect(sdl_object, "window-state-event",   G_CALLBACK(Sdl2Area::eventWindowState), app) <= 0 )
 		printf("Could not connect window-state-event signal.\n");
 	if ( g_signal_connect(sdl_object, "configure-event",      G_CALLBACK (Sdl2Area::eventConfigure),   app) <= 0 )
 		printf("Could not connect configure-event signal.\n");

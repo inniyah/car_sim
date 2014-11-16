@@ -20,6 +20,7 @@
  */
 
 #include "Race.h"
+#include "core/Common.h"
 
 #include <stdlib.h>
 #include <time.h>
@@ -447,18 +448,18 @@ unsigned int Race::update(unsigned int milliseconds) {
 
     switch (car.lapflag) {
       case 1: // if we completed a lap
-        printf("Lap Complete\n");
+        printLog("Lap Complete");
         car.lapflag=0;
         break;
       case 2: // if we completed an incomplete lap
-        printf("Last Canceled");
+        printLog("Last Lap Canceled");
         car.lapflag=0;
         break;
       case 3: // if we miss a checkpoint
-        printf("Checkpoint missed ! ");
+        printLog("Checkpoint missed!");
         break;
       case 4: // if we validate a missed checkpoint
-        printf("Checkpoint missed OK");
+        printLog("Checkpoint missed OK");
         break;
       default: // nothing
         break;

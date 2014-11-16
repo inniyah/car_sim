@@ -8,7 +8,7 @@
     <property name="default_width">500</property>
     <property name="default_height">400</property>
     <child>
-      <object class="GtkDrawingArea" id="sdl2">
+      <object class="GtkDrawingArea" id="sdl">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="hexpand">False</property>
