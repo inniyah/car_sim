@@ -1,4 +1,6 @@
 /*
+ * Copyright (C) 2014  Miriam Ruiz <miriam@debian.org>
+ * 
  * Based on zeRace 0.7 ('a funny retro racing game')
  * http://royale.zerezo.com/zerace/
  * 
@@ -214,14 +216,13 @@ void Race::startTrack(int id) {
 	mLeftKey = false;
 	mRightKey = false;
 
-  car.speed = 0;
-  car.angle = track[miTrackId].start_a * 2. * M_PI / 360.;
-  car.ox = car.x = track[miTrackId].start_x;
-  car.oy = car.y = track[miTrackId].start_y;
-  car.lastcheck = 0;
-  car.lapflag = 0;
-  car.w = mpaSdlSurfaceCars[0][0]->w;
-  car.h = mpaSdlSurfaceCars[0][0]->h;
+	car.setSize( mpaSdlSurfaceCars[0][0]->w, mpaSdlSurfaceCars[0][0]->h);
+	car.setPosition( track[miTrackId].start_x, track[miTrackId].start_y, track[miTrackId].start_a * 2. * M_PI / 360. );
+	car.setSpeed(0);
+	car.backupPosition();
+
+	car.lastcheck = 0;
+	car.lapflag = 0;
 }
 
 #if 0
@@ -235,8 +236,8 @@ void Race::turn() {
     delay=DELAY;
 
     /* clear the old position */
-    pos.x=car.ox-car.w/2;
-    pos.y=car.oy-car.h/2;
+    pos.x=car.old_x-car.w/2;
+    pos.y=car.old_y-car.h/2;
     pos.w=car.w;
     pos.h=car.h;
     SDL_BlitSurface(mpSdlSurfaceCircuit, &pos, mpSdlSurfaceScreen, &pos);
@@ -250,7 +251,7 @@ void Race::turn() {
 
     
     /* if the car is fast or braking, it slides */
-    if ((kd && car.speed>0.5) || (car.speed>2.0 && !ku)) {
+    if ((kd && car.getSpeed()>0.5) || (car.getSpeed()>2.0 && !ku)) {
       /* display tires slide */
       if (show_tires) {
         sdlPutPixel(mpSdlSurfaceCircuit,car.x+cos(car.angle)*car.w/3-sin(car.angle)*4,car.y+sin(car.angle)*car.h/3+cos(car.angle)*4,T_BLACK);
@@ -269,24 +270,53 @@ void Race::turn() {
 }
 #endif
 
-void Race::lights(int x, int y, int r) {
-  SDL_RenderDrawPoint(mxSdlRenderer, x, y);
+void Car::drawRawLight(SDL_Renderer * renderer, int x, int y, int r) {
+  SDL_RenderDrawPoint(renderer, x, y);
   if (r>1) {
-    SDL_RenderDrawPoint(mxSdlRenderer, x-1, y   );
-    SDL_RenderDrawPoint(mxSdlRenderer, x+1, y   );
-    SDL_RenderDrawPoint(mxSdlRenderer, x,   y-1 );
-    SDL_RenderDrawPoint(mxSdlRenderer, x,   y+1 );
+    SDL_RenderDrawPoint(renderer, x-1, y   );
+    SDL_RenderDrawPoint(renderer, x+1, y   );
+    SDL_RenderDrawPoint(renderer, x,   y-1 );
+    SDL_RenderDrawPoint(renderer, x,   y+1 );
   }
   if (r>2) {
-    SDL_RenderDrawPoint(mxSdlRenderer, x-2, y   );
-    SDL_RenderDrawPoint(mxSdlRenderer, x+2, y   );
-    SDL_RenderDrawPoint(mxSdlRenderer, x,   y-2 );
-    SDL_RenderDrawPoint(mxSdlRenderer, x,   y+2 );
-    SDL_RenderDrawPoint(mxSdlRenderer, x-1, y-1 );
-    SDL_RenderDrawPoint(mxSdlRenderer, x-1, y+1 );
-    SDL_RenderDrawPoint(mxSdlRenderer, x+1, y-1 );
-    SDL_RenderDrawPoint(mxSdlRenderer, x+1, y+1 );
+    SDL_RenderDrawPoint(renderer, x-2, y   );
+    SDL_RenderDrawPoint(renderer, x+2, y   );
+    SDL_RenderDrawPoint(renderer, x,   y-2 );
+    SDL_RenderDrawPoint(renderer, x,   y+2 );
+    SDL_RenderDrawPoint(renderer, x-1, y-1 );
+    SDL_RenderDrawPoint(renderer, x-1, y+1 );
+    SDL_RenderDrawPoint(renderer, x+1, y-1 );
+    SDL_RenderDrawPoint(renderer, x+1, y+1 );
   }
+}
+
+void Car::drawBrakeLights(SDL_Renderer * renderer) {
+	SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255); // Red
+	drawRawLight(renderer, x_pos + cos(angle) * width/3 - sin(angle)*4, y_pos + sin(angle) * height/3 + cos(angle)*4, 3);
+	drawRawLight(renderer, x_pos + cos(angle) * width/3 + sin(angle)*4, y_pos + sin(angle) * height/3 - cos(angle)*4, 3);
+}
+
+void Car::drawReversingLights(SDL_Renderer * renderer) {
+	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // White
+	drawRawLight(renderer, x_pos + cos(angle) * width/3 - sin(angle)*4, y_pos + sin(angle) * height/3 + cos(angle)*4, 3);
+	drawRawLight(renderer, x_pos + cos(angle) * width/3 + sin(angle)*4, y_pos + sin(angle) * height/3 - cos(angle)*4, 3);
+}
+
+void Car::drawWarningLights(SDL_Renderer * renderer) {
+	SDL_SetRenderDrawColor(renderer, 255, 200, 0, 255); // Orange
+	drawRawLight(renderer, x_pos - cos(angle) * width/3 - sin(angle)*5, y_pos - sin(angle) * height/3 + cos(angle)*5, 2);
+	drawRawLight(renderer, x_pos - cos(angle) * width/3 + sin(angle)*5, y_pos - sin(angle) * height/3 - cos(angle)*5, 2);
+	drawRawLight(renderer, x_pos + cos(angle) * width/3 - sin(angle)*5, y_pos + sin(angle) * height/3 + cos(angle)*5, 2);
+	drawRawLight(renderer, x_pos + cos(angle) * width/3 + sin(angle)*5, y_pos + sin(angle) * height/3 - cos(angle)*5, 2);
+}
+
+void Car::drawPositionLights(SDL_Renderer * renderer) {
+	SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255); // Red
+	drawRawLight(renderer, x_pos + cos(angle) * width/3 - sin(angle)*3, y_pos + sin(angle) * height/3 + cos(angle)*4, 2);
+	drawRawLight(renderer, x_pos + cos(angle) * width/3 + sin(angle)*3, y_pos + sin(angle) * height/3 - cos(angle)*4, 2);
+	SDL_SetRenderDrawColor(renderer, 255, 255, 100, 255); // Yellow
+	drawRawLight(renderer, x_pos - cos(angle) * width/3 - sin(angle)*4, y_pos - sin(angle) * height/3 + cos(angle)*4, 3);
+	drawRawLight(renderer, x_pos - cos(angle) * width/3 + sin(angle)*4, y_pos - sin(angle) * height/3 - cos(angle)*4, 3);
 }
 
 bool Race::draw() {
@@ -300,12 +330,12 @@ bool Race::draw() {
 	SDL_RenderCopy(mxSdlRenderer, mpSdlTextureCircuit, NULL, &circ_rect);
 
 	SDL_Rect car_rect;
-	car_rect.x = car.x - car.w/2;
-	car_rect.y = car.y - car.h/2;
-	car_rect.w = car.w;
-	car_rect.h = car.h;
+	car_rect.x = car.getX() - car.getW()/2;
+	car_rect.y = car.getY() - car.getH()/2;
+	car_rect.w = car.getW();
+	car_rect.h = car.getH();
 
-	unsigned char car_angle = (unsigned char)(256*car.angle/2.0/M_PI)%256;
+	unsigned char car_angle = (unsigned char)(256 * car.getAngle() / 2.0 / M_PI) % 256;
 	SDL_Texture  * car_texture = SDL_CreateTextureFromSurface(mxSdlRenderer, mpaSdlSurfaceCars[miCarId][car_angle]);
 	SDL_RenderCopy(mxSdlRenderer, car_texture, NULL, &car_rect);
 	if (NULL != car_texture) {
@@ -313,34 +343,20 @@ bool Race::draw() {
 		car_texture = NULL;
 	}
 
-    if ( mDownKey && car.speed > 0.1 ) { // if the car is braking, display red lights
-      SDL_SetRenderDrawColor(mxSdlRenderer, 255, 0, 0, 255); // Red
-      lights(car.x+cos(car.angle)*car.w/3-sin(car.angle)*4,car.y+sin(car.angle)*car.h/3+cos(car.angle)*4, 3);
-      lights(car.x+cos(car.angle)*car.w/3+sin(car.angle)*4,car.y+sin(car.angle)*car.h/3-cos(car.angle)*4, 3);
-    }
-    
-    if ( car.speed < -0.1 ) { // if the car is going backwards, display white lights
-      SDL_SetRenderDrawColor(mxSdlRenderer, 255, 255, 255, 255); // White
-      lights(car.x+cos(car.angle)*car.w/3-sin(car.angle)*4,car.y+sin(car.angle)*car.h/3+cos(car.angle)*4, 3);
-      lights(car.x+cos(car.angle)*car.w/3+sin(car.angle)*4,car.y+sin(car.angle)*car.h/3-cos(car.angle)*4, 3);
-    }
+	if ( mDownKey && car.getSpeed() > 0.1 ) {
+		car.drawBrakeLights(mxSdlRenderer);
+	}
+	if ( car.getSpeed() < -0.1 ) {
+		car.drawReversingLights(mxSdlRenderer);
+	}
 
-    if ( car.speed >= -0.1 && car.speed <= 0.1 && (SDL_GetTicks() % 800) > 400 ) { // if the car is stopped, then warning
-      SDL_SetRenderDrawColor(mxSdlRenderer, 255, 200, 0, 255); // Orange
-      lights(car.x-cos(car.angle)*car.w/3-sin(car.angle)*5,car.y-sin(car.angle)*car.h/3+cos(car.angle)*5, 2);
-      lights(car.x-cos(car.angle)*car.w/3+sin(car.angle)*5,car.y-sin(car.angle)*car.h/3-cos(car.angle)*5, 2);
-      lights(car.x+cos(car.angle)*car.w/3-sin(car.angle)*5,car.y+sin(car.angle)*car.h/3+cos(car.angle)*5, 2);
-      lights(car.x+cos(car.angle)*car.w/3+sin(car.angle)*5,car.y+sin(car.angle)*car.h/3-cos(car.angle)*5, 2);
-    }
-    
-    if ( false ) { // position lights
-      SDL_SetRenderDrawColor(mxSdlRenderer, 255, 0, 0, 255); // Red
-      lights(car.x+cos(car.angle)*car.w/3-sin(car.angle)*3,car.y+sin(car.angle)*car.h/3+cos(car.angle)*4, 2);
-      lights(car.x+cos(car.angle)*car.w/3+sin(car.angle)*3,car.y+sin(car.angle)*car.h/3-cos(car.angle)*4, 2);
-      SDL_SetRenderDrawColor(mxSdlRenderer, 255, 255, 100, 255); // Yellow
-      lights(car.x-cos(car.angle)*car.w/3-sin(car.angle)*4,car.y-sin(car.angle)*car.h/3+cos(car.angle)*4, 3);
-      lights(car.x-cos(car.angle)*car.w/3+sin(car.angle)*4,car.y-sin(car.angle)*car.h/3-cos(car.angle)*4, 3);
-    }
+	if ( car.getSpeed() >= -0.1 && car.getSpeed() <= 0.1 && (SDL_GetTicks() % 800) > 400 ) {
+		car.drawWarningLights(mxSdlRenderer);
+	}
+
+	if ( false ) {
+		car.drawPositionLights(mxSdlRenderer);
+	}
 
 	SDL_RenderPresent(mxSdlRenderer);
 	SDL_SetRenderDrawColor(mxSdlRenderer, 0, 0, 0, 0);
@@ -349,97 +365,82 @@ bool Race::draw() {
 }
 
 void Race::moveCar() {
-  Uint32 c;
-  Uint8 r,g,b;
-  
-  // reset flags
-  car.crashflag=0;
-  
-  // get the pixel color under the center of car in the function map
-  c = sdlGetPixel(mpSdlSurfaceFunction, car.x, car.y);
+	Uint32 c;
+	Uint8 r,g,b;
 
-  /* red layer (checkpoints) */
-  /* green layer (road quality) */
-  SDL_GetRGB(c,mpSdlSurfaceFunction->format, &r, &g, &b);
+	// reset flags
+	car.crashflag=0;
 
-  if (mUpKey) {
-    car.speed += 0.01 * 2. * COEFF;
-  }
-  if (mDownKey) {
-    car.speed -= 0.01 * COEFF;
-  }
-  if (mLeftKey) {
-    if (car.speed < 0) {
-      car.angle += 0.01 * COEFF;
-    } else {
-      car.angle -= 0.01 * COEFF;
-    }
-  }
-  if (mRightKey) {
-    if (car.speed<0) {
-      car.angle -= 0.01 * COEFF;
-    } else {
-      car.angle += 0.01 * COEFF;
-    }
-  }
-  
-  // limit angle between 0 and 2*pi
-  if (car.angle < 0.) {
-       car.angle += 2. * M_PI;
-  }
-  if (car.angle > 2. * M_PI) {
-      car.angle -= 2. * M_PI;
-  }
-  
-  // update the speed depending on the road quality
-  car.speed -= car.speed * (255-g) / 1000.;
- 
-  // if it is a wall we move back to the last position
-  if (g==0) {
-    car.x = car.ox;
-    car.y = car.oy;
-    car.crashflag=1;
-  }
-  
-  // save the old position and compute the new one
-  car.ox = car.x;
-  car.oy = car.y;
-  car.speed *= 0.995;
-  car.x -= cos(car.angle) * car.speed;
-  car.y -= sin(car.angle) * car.speed;
-  
-  // collision with the border of the screen
-  if (car.x < car.w/2 || car.x > mpSdlSurfaceFunction->w - car.w/2 || car.y < car.h/2 || car.y > mpSdlSurfaceFunction->h - car.h/2) {
-    car.x = car.ox;
-    car.y = car.oy;
-    car.speed = 0;
-    car.crashflag = 1;
-  }
-  
-  // if we are on the next checkpoint, validate it
-  if (r/8 == car.lastcheck + 1) {
-    /* If we validate a missed checkpoint */
-    if (car.lapflag==3) car.lapflag=4;
-    car.lastcheck++;
-  }
-  
-  // if we missed a checkpoint
-  if ((r/8 > car.lastcheck+1) && (car.lastcheck != 0)) car.lapflag = 3;
+	// get the pixel color under the center of car in the function map
+	c = sdlGetPixel(mpSdlSurfaceFunction, car.getX(), car.getY());
 
-  // if we validate all and start over, we complete a turn
-  if (r/8 == 0 && car.lastcheck == 31) { // reset turn variables
-    car.lastcheck = 0;
-    car.lap++;
-    car.lapflag = 1;
-  }
-  
-  // if we are at the start but not each checkpoint validate, it's an incomplete lap
-  if (r/8==0 && r!=0 && car.lastcheck != 31 && car.lastcheck > 0) {
-    car.lastcheck = 0;
-    car.lapflag = 2;
-  }
-  
-  return;
+	/* red layer (checkpoints) */
+	/* green layer (road quality) */
+	SDL_GetRGB(c,mpSdlSurfaceFunction->format, &r, &g, &b);
+
+	if (mUpKey) {
+		car.incSpeed( 0.01 * 2. );
+	}
+	if (mDownKey) {
+		car.decSpeed( 0.01 );
+	}
+	if (mLeftKey) {
+		car.turnLeft( 0.01 );
+	}
+	if (mRightKey) {
+		car.turnRight( 0.01 );
+	}
+
+	// update the speed depending on the road quality
+	car.decSpeedByFactor( (255 - g) / 1000. );
+
+	// if it is a wall we move back to the last position
+	if (g==0) {
+		car.restorePosition();
+		car.crashflag=1;
+	}
+
+	// save the old position and compute the new one
+	car.backupPosition();
+	car.computeNewPosition();
+
+	// collision with the border of the screen
+	if (
+		car.getX() < car.getW() / 2 ||
+		car.getX() > mpSdlSurfaceFunction->w - car.getW() / 2 ||
+		car.getY() < car.getH() / 2 ||
+		car.getY() > mpSdlSurfaceFunction->h - car.getH() / 2
+	) {
+		car.restorePosition();
+		car.setSpeed(0);
+		car.crashflag = 1;
+	}
+
+	// if we are on the next checkpoint, validate it
+	if (r/8 == car.lastcheck + 1) {
+		if (car.lapflag==3) { // If we validate a missed checkpoint
+			car.lapflag=4;
+		}
+		car.lastcheck++;
+	}
+
+	// if we missed a checkpoint
+	if ((r/8 > car.lastcheck+1) && (car.lastcheck != 0)) {
+		car.lapflag = 3;
+	}
+
+	// if we validate all and start over, we complete a turn
+	if (r/8 == 0 && car.lastcheck == 31) { // reset turn variables
+		car.lastcheck = 0;
+		car.lap++;
+		car.lapflag = 1;
+	}
+
+	// if we are at the start but not each checkpoint validate, it's an incomplete lap
+	if (r/8==0 && r!=0 && car.lastcheck != 31 && car.lastcheck > 0) {
+		car.lastcheck = 0;
+		car.lapflag = 2;
+	}
 }
 
 unsigned int Race::update(unsigned int milliseconds) {

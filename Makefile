@@ -6,8 +6,8 @@ SRCS = \
 	core/MainGtk3App.cpp \
 	core/Sdl2App.cpp \
 	core/Threads.cpp \
-	core/main.cpp \
-	race/Race.cpp \
+	core/Main.cpp \
+	race/Race.cpp
 
 OBJS = $(SRCS:.cpp=.o)
 
