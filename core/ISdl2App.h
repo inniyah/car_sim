@@ -8,6 +8,7 @@ struct ISdl2App {
 	virtual void init(SDL_Window * sdl_window, int w, int h) = 0;
 	virtual void destroy() = 0;
 	virtual void draw() = 0;
+	virtual void update() = 0;
 	virtual void processEvents() = 0;
 };
 

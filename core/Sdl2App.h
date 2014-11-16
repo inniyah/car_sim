@@ -3,6 +3,8 @@
 
 #include "ISdl2App.h"
 
+#include "race/Race.h"
+
 #include <SDL2/SDL.h>
 #include <stdint.h>
 #include <slm/mat4.h>
@@ -19,15 +21,12 @@ class Sdl2App : public ISdl2App {
 		virtual void destroy();
 
 		virtual void draw();
+		virtual void update();
 		virtual void processEvents();
 
 	protected:
 		bool eventHandler(SDL_Event & event);
-		bool eventHandlerKeyboad(SDL_Event & event);
 		bool eventHandlerWindow(SDL_Event & event);
-		bool eventHandlerMouse(SDL_Event & event);
-		bool eventHandlerJoystick(SDL_Event & event);
-		bool eventHandlerUser(SDL_Event & event);
 
 		void requestInputGrab();
 		void releaseInputGrab();
@@ -36,11 +35,13 @@ class Sdl2App : public ISdl2App {
 		void processQuitRequest();
 
 	private:
-		SDL_Window * mxSdlWindow;
+		SDL_Window   * mxSdlWindow;
 		SDL_Renderer * mpSdlRenderer;
 
 		SDL_Surface * mpSdlImage;
 		SDL_Texture * mpSdlTexture;
+
+		Race mRace;
 
 		int miScreenWidth;
 		int miScreenHeight;
@@ -52,8 +53,10 @@ class Sdl2App : public ISdl2App {
 		bool mbRelativeMouseActive;
 		bool mbRepeatKeys;
 
-		uint32_t miStartClock;
+		Uint32 miStartClock;
 		float mfFramesPerSecond;
+
+		Uint32 miLastUpdateTime;
 
 		Sdl2AppThread * mpThread;
 

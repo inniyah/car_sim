@@ -6,7 +6,8 @@ SRCS = \
 	core/MainGtk3App.cpp \
 	core/Sdl2App.cpp \
 	core/Threads.cpp \
-	core/main.cpp
+	core/main.cpp \
+	race/Race.cpp \
 
 OBJS = $(SRCS:.cpp=.o)
 
@@ -17,7 +18,7 @@ PKG_CONFIG_LIBS=`pkg-config --libs $(PKG_CONFIG)`
 CFLAGS= -O2 -g -Wall
 INCS=-I. -Islmath/include
 LDFLAGS= -Wl,-z,defs -Wl,--as-needed -Wl,--no-undefined
-LIBS=$(PKG_CONFIG_LIBS) -lpthread -lm -Lslmath -lslmath
+LIBS=$(PKG_CONFIG_LIBS) -lSDL2_image -lSDL2_gfx -lpthread -lm -Lslmath -lslmath
 
 $(PROGRAM): $(OBJS) slmath/libslmath.a
 	g++ $(LDFLAGS) $(OBJS) -o $@ $(LIBS)

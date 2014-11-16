@@ -7,7 +7,7 @@
 #include <SDL2/SDL.h>
 #include "SDL2/SDL_events.h"
 
-#define FPS 60
+#define FPS 30
 
 #define UI_FILE "data/app.ui"
 
@@ -76,6 +76,7 @@ struct GtkSdl2CanvasPrivate {
 gboolean Sdl2Canvas::draw(gpointer user_data) {
 	GtkSdl2CanvasPrivate *priv = SDL2_CANVAS_GET_PRIVATE(G_APPLICATION (user_data));
 	priv->sdl_app->processEvents();
+	priv->sdl_app->update();
 	priv->sdl_app->draw();
 	return TRUE;
 }
@@ -84,7 +85,7 @@ gboolean Sdl2Canvas::draw(gpointer user_data) {
 // https://wiki.libsdl.org/SDL_Keycode
 
 SDL_Keycode Sdl2Canvas::GdkKeyToSdlKeycode(guint gdk_key) {
-	printf("Key Code: 0x%X\n", gdk_key);
+	//printf("Key Code: 0x%X\n", gdk_key);
 	switch (gdk_key) {
 		case GDK_KEY_A: return SDLK_a;
 		case GDK_KEY_B: return SDLK_b;
@@ -261,12 +262,12 @@ SDL_Keycode Sdl2Canvas::GdkKeyToSdlKeycode(guint gdk_key) {
 // https://developer.gnome.org/gdk3/stable/gdk3-Event-Structures.html
 
 gboolean Sdl2Canvas::eventWindowState(GtkWidget * widget, GdkEventWindowState * winstate, gpointer user_data) {
-	printf("W\n");
+	//printf("W\n");
 	return TRUE;
 }
 
 gboolean Sdl2Canvas::eventConfigure(GtkWidget * widget, GdkEventConfigure *config, gpointer user_data) {
-	printf("C\n");
+	//printf("C\n");
 
 	GApplication * app = G_APPLICATION(user_data);
 	GtkSdl2CanvasPrivate * priv = SDL2_CANVAS_GET_PRIVATE(app);
@@ -301,7 +302,7 @@ gboolean Sdl2Canvas::eventMotion(GtkWidget *widget, GdkEventMotion *motion, gpoi
 }
 
 gboolean Sdl2Canvas::eventButton(GtkWidget *widget, GdkEventButton *button, gpointer user_data) {
-	printf("B\n");
+	//printf("B\n");
 	SDL_MouseButtonEvent event;
 	memset(&event, 0, sizeof(event));
 	switch (button->type) {
@@ -344,7 +345,7 @@ gboolean Sdl2Canvas::eventButton(GtkWidget *widget, GdkEventButton *button, gpoi
 }
 
 gboolean Sdl2Canvas::eventScroll(GtkWidget *widget, GdkEventScroll *scroll, gpointer user_data) {
-	printf("S\n");
+	//printf("S\n");
 	SDL_MouseWheelEvent event;
 	memset(&event, 0, sizeof(event));
 	event.type = SDL_MOUSEWHEEL;
@@ -358,7 +359,7 @@ gboolean Sdl2Canvas::eventScroll(GtkWidget *widget, GdkEventScroll *scroll, gpoi
 }
 
 gboolean Sdl2Canvas::eventKey(GtkWidget *widget, GdkEventKey *key, gpointer user_data) {
-	printf("K\n");
+	//printf("K\n");
 	SDL_KeyboardEvent event;
 	memset(&event, 0, sizeof(event));
 	switch (key->type) {
@@ -386,17 +387,17 @@ gboolean Sdl2Canvas::eventKey(GtkWidget *widget, GdkEventKey *key, gpointer user
 }
 
 gboolean Sdl2Canvas::eventEnter(GtkWidget *widget, GdkEventCrossing *crossing, gpointer user_data) {
-	printf("E\n");
+	//printf("E\n");
 	return TRUE;
 }
 
 gboolean Sdl2Canvas::eventLeave(GtkWidget *widget, GdkEventCrossing *crossing, gpointer user_data) {
-	printf("L\n");
+	//printf("L\n");
 	return TRUE;
 }
 
 gboolean Sdl2Canvas::eventFocus(GtkWidget *widget, GdkEventFocus *focus, gpointer user_data) {
-	printf("F\n");
+	//printf("F\n");
 	return TRUE;
 }
 
