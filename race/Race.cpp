@@ -359,7 +359,6 @@ void Race::moveCar() {
 
   /* red layer (checkpoints) */
   /* green layer (road quality) */
-  /* blue layer (grip) */
   SDL_GetRGB(c,mpSdlSurfaceFunction->format, &r, &g, &b);
 
   if (mUpKey) {
@@ -370,16 +369,16 @@ void Race::moveCar() {
   }
   if (mLeftKey) {
     if (car.speed < 0) {
-      car.angle += 0.01 * (255-b)/255 * COEFF;
+      car.angle += 0.01 * COEFF;
     } else {
-      car.angle -= 0.01 * (255-b)/255 * COEFF;
+      car.angle -= 0.01 * COEFF;
     }
   }
   if (mRightKey) {
     if (car.speed<0) {
-      car.angle -= 0.01 * (255-b)/255 * COEFF;
+      car.angle -= 0.01 * COEFF;
     } else {
-      car.angle += 0.01 * (255-b)/255 * COEFF;
+      car.angle += 0.01 * COEFF;
     }
   }
   
