@@ -5,7 +5,17 @@
 extern "C" {
 #endif
 
-void printLog(const char* fmt, ...);
+typedef enum {
+	LOG_INFO,
+	LOG_WARNING,
+	LOG_ERROR
+} LogType;
+
+void printLog(LogType type, const char* fmt, ...);
+
+#define printInfoLog(...)    printLog(LOG_INFO,  __VA_ARGS__);
+#define printWarningLog(...) printLog(LOG_WARNING,  __VA_ARGS__);
+#define printErrorLog(...)   printLog(LOG_ERROR,  __VA_ARGS__);
 
 #ifdef __cplusplus
 }

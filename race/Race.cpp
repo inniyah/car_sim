@@ -448,18 +448,18 @@ unsigned int Race::update(unsigned int milliseconds) {
 
     switch (car.lapflag) {
       case 1: // if we completed a lap
-        printLog("Lap Complete");
+        printInfoLog("Lap Complete");
         car.lapflag=0;
         break;
       case 2: // if we completed an incomplete lap
-        printLog("Last Lap Canceled");
+        printInfoLog("Last Lap Canceled");
         car.lapflag=0;
         break;
       case 3: // if we miss a checkpoint
-        printLog("Checkpoint missed!");
+        printInfoLog("Checkpoint missed!");
         break;
       case 4: // if we validate a missed checkpoint
-        printLog("Checkpoint missed OK");
+        printInfoLog("Checkpoint missed OK");
         break;
       default: // nothing
         break;

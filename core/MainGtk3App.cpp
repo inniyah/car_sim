@@ -91,7 +91,7 @@ gboolean MainApp::draw(gpointer user_data) {
 	return TRUE;
 }
 
-static void appendTextToWidget(GtkWidget * widget, gchar * text, bool new_line = true) {
+static void appendTextToWidget(LogType type, GtkWidget * widget, gchar * text, bool new_line = true) {
 	GtkTextBuffer *buffer;
 	GtkTextMark *mark;
 	GtkTextIter iter;
@@ -118,7 +118,11 @@ static void appendTextToWidget(GtkWidget * widget, gchar * text, bool new_line =
 
 GtkWidget * global_log_widget = NULL;
 
-void printLog(const char* fmt, ...) {
+// https://developer.gnome.org/gtk3/stable/GtkTextView.html
+
+// Note: see http://zetcode.com/tutorials/gtktutorial/gtktextview/
+
+void printLog(LogType type, const char* fmt, ...) {
 	char buff[LOG_MAXLENGTH];
 	va_list args;
 	va_start(args, fmt);
@@ -127,7 +131,7 @@ void printLog(const char* fmt, ...) {
 	buff[sizeof(buff) - 1] = '\0';
 
 	puts(buff);
-	appendTextToWidget(global_log_widget, buff);
+	appendTextToWidget(type, global_log_widget, buff);
 }
 
 // https://git.gnome.org/browse/gtk+/plain/gdk/gdkkeysyms.h
