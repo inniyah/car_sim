@@ -1,5 +1,6 @@
 #include "MainGtk3App.h"
 #include "ISdl2App.h"
+#include "InfoHandler.h"
 #include "Common.h"
 
 #include <cstdio>
@@ -80,6 +81,8 @@ struct MainAppPrivateData {
 	SDL_Window *   sdl_window;
 	ISdl2App   *   sdl_app;
 
+	InfoHandler *  info_handler;
+
 	guint idle_handler;
 };
 
@@ -88,6 +91,7 @@ gboolean MainApp::draw(gpointer user_data) {
 	priv->sdl_app->processEvents();
 	priv->sdl_app->update();
 	priv->sdl_app->draw();
+	priv->info_handler->showInfo();
 	return TRUE;
 }
 
@@ -475,11 +479,18 @@ void MainApp::setup(GApplication * app) {
 		gtk_widget_get_allocated_width(priv->sdl_widget),
 		gtk_widget_get_allocated_height(priv->sdl_widget)
 	);
+
 	priv->idle_handler = g_timeout_add(1000/FPS, MainApp::draw, (gpointer)app);
 }
 
 void MainApp::cleanup(GtkApplication * app) {
 	MainAppPrivateData *priv = MAIN_APP_GET_PRIVATE(app);
+
+	if (NULL != priv->info_handler) {
+		delete priv->info_handler;
+		priv->info_handler = NULL;
+	}
+
 	priv->sdl_app->destroy();
 }
 
@@ -550,6 +561,8 @@ void MainApp::createFromFile(GApplication * app, GFile * file) {
 
 	// GdkEventMask is defined in /usr/include/gtk-3.0/gdk/gdktypes.h
 	// http://www.linuxtopia.org/online_books/gui_toolkit_guides/gtk+_gnome_application_development/sec-gdkevent_1.html
+
+	priv->info_handler = new InfoHandler(priv->sdl_app, window, builder);
 
 	gtk_widget_add_events(sdl_widget, GDK_ALL_EVENTS_MASK);
 	gtk_widget_set_can_focus(sdl_widget, true);

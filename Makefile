@@ -3,11 +3,12 @@ PROGRAM=test
 all: $(PROGRAM)
 
 SRCS = \
-	core/MainGtk3App.cpp \
-	core/Sdl2App.cpp \
-	core/Threads.cpp \
-	core/Main.cpp \
-	race/Race.cpp
+	src/MainGtk3App.cpp \
+	src/Sdl2App.cpp \
+	src/Threads.cpp \
+	src/InfoHandler.cpp \
+	src/Main.cpp \
+	src/Race.cpp
 
 OBJS = $(SRCS:.cpp=.o)
 

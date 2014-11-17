@@ -174,6 +174,8 @@ public:
 	bool eventHandlerJoystick(SDL_Event & event);
 	bool eventHandlerUser(SDL_Event & event);
 
+	bool getInfo(void * dest, unsigned int type, intptr_t param);
+
 private:
 	static const size_t MAXLINELENGTH = 80;
 	static const int DELAY = 7;

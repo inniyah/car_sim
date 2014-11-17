@@ -22,7 +22,8 @@
  */
 
 #include "Race.h"
-#include "core/Common.h"
+#include "InfoTypes.h"
+#include "Common.h"
 
 #include <stdlib.h>
 #include <time.h>
@@ -629,4 +630,31 @@ bool Race::eventHandlerUser(SDL_Event & event) {
 		default:
 			return false;
 	}
+}
+
+bool Race::getInfo(void * dest, unsigned int type, intptr_t param) {
+	switch (type) {
+		case INFO_NONE: {
+			return true;
+		}
+		case INFO_POSITION_3F: {
+			float * f = (float*)dest;
+			f[0] = car.getX();
+			f[1] = car.getY();
+			f[2] = 0.0;
+			return true;
+		}
+		case INFO_SPEED_3F: {
+			float * f = (float*)dest;
+			float speed = car.getSpeed();
+			float angle = car.getAngle();
+			f[0] = -speed*cos(angle);
+			f[1] = speed*sin(angle);
+			f[2] = 0.0;
+			return true;
+		}
+		default:
+			return false;
+	}
+	return false;
 }

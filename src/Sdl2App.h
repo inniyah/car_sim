@@ -2,8 +2,7 @@
 #define SDL2APP_H_F74726CC_5FC4_11E4_8E19_10FEED04CD1C
 
 #include "ISdl2App.h"
-
-#include "race/Race.h"
+#include "Race.h"
 
 #include <SDL2/SDL.h>
 #include <stdint.h>
@@ -23,6 +22,8 @@ class Sdl2App : public ISdl2App {
 		virtual void draw();
 		virtual void update();
 		virtual void processEvents();
+
+		virtual bool getInfo(void * dest, unsigned int type, intptr_t param);
 
 	protected:
 		bool eventHandler(SDL_Event & event);

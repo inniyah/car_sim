@@ -1,6 +1,8 @@
 #ifndef ISDL2APP_H_47F8A86A_62C3_11E4_B6C6_10FEED04CD1C
 #define ISDL2APP_H_47F8A86A_62C3_11E4_B6C6_10FEED04CD1C
 
+#include <stdint.h>
+
 struct SDL_Window;
 
 struct ISdl2App {
@@ -10,6 +12,8 @@ struct ISdl2App {
 	virtual void draw() = 0;
 	virtual void update() = 0;
 	virtual void processEvents() = 0;
+
+	virtual bool getInfo(void * dest, unsigned int type, intptr_t param) = 0;
 };
 
 #endif

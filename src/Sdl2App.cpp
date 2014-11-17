@@ -132,6 +132,10 @@ void Sdl2App::update() {
 	miLastUpdateTime = current_time - pending;
 }
 
+bool Sdl2App::getInfo(void * dest, unsigned int type, intptr_t param) {
+	return mRace.getInfo(dest, type, param);
+}
+
 void Sdl2App::processEvents() {
 	SDL_Event event;
 	while ( SDL_PollEvent( &event ) ) {
