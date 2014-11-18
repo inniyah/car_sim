@@ -51,8 +51,8 @@ const Track Race::track[] = {
 	{ "kart",     370, 725, 0,     "Kart",                           "Jujucece" },
 	{ "wave",     630, 380, 180,   "Wave",                           "Jujucece" },
 
+	{ "wave2",     630, 380, 180,  "Wave 2",                         "Miriam" },
 	{ "formula",  350, 330, 220,   "Formula",                        "Ju" },
-	{ NULL,       0,   0,   0,     "",                               "" },
 	{ NULL,       0,   0,   0,     "",                               "" },
 	{ NULL,       0,   0,   0,     "",                               "" },
 };
@@ -69,7 +69,6 @@ Race::Race() :
 	mDownKey(false),
 	mLeftKey(false),
 	mRightKey(false)
-
 {
 	generateCars();
 }
@@ -98,11 +97,11 @@ void Race::setUp(SDL_Renderer * renderer) {
  * NOTE: The surface must be locked before calling this!
  */
 static Uint32 sdlGetPixel(SDL_Surface *surface, int x, int y) {
-    int bpp = surface->format->BytesPerPixel;
-    /* Here p is the address to the pixel we want to retrieve */
-    Uint8 *p = (Uint8 *)surface->pixels + y * surface->pitch + x * bpp;
+	int bpp = surface->format->BytesPerPixel;
+	// Here p is the address to the pixel we want to retrieve
+	Uint8 *p = (Uint8 *)surface->pixels + y * surface->pitch + x * bpp;
 
-    switch(bpp) {
+	switch(bpp) {
 		case 1:
 			return *p;
 		case 2:
@@ -124,11 +123,11 @@ static Uint32 sdlGetPixel(SDL_Surface *surface, int x, int y) {
  * NOTE: The surface must be locked before calling this!
  */
 static void sdlPutPixel(SDL_Surface *surface, int x, int y, Uint32 pixel) {
-    int bpp = surface->format->BytesPerPixel;
-    /* Here p is the address to the pixel we want to set */
-    Uint8 *p = (Uint8 *)surface->pixels + y * surface->pitch + x * bpp;
+	int bpp = surface->format->BytesPerPixel;
+	// Here p is the address to the pixel we want to set
+	Uint8 *p = (Uint8 *)surface->pixels + y * surface->pitch + x * bpp;
 
-    switch(bpp) {
+	switch(bpp) {
 		case 1:
 			*p = pixel;
 			break;
@@ -151,7 +150,7 @@ static void sdlPutPixel(SDL_Surface *surface, int x, int y, Uint32 pixel) {
 			break;
 		default:
 			return; // shouldn't happen, but avoids warnings
-    }
+	}
 }
 
 /* load the car sprite and rotate it for every angles */
@@ -322,6 +321,49 @@ void Car::drawPositionLights(SDL_Renderer * renderer) {
 }
 
 bool Race::draw() {
+	if ((mDownKey && car.getSpeed()>0.5) || (car.getSpeed()>2.0 && !mUpKey)) { // if the car is fast or braking, it slides
+		if (show_tires) { // display tires slide
+
+			float x = car.getX();
+			float y = car.getY();
+			float w = car.getW();
+			float h = car.getH();
+			float angle = car.getAngle();
+			float cos_a = cos(angle);
+			float sin_a = sin(angle);
+
+			sdlPutPixel( mpSdlSurfaceCircuit,
+				x + cos_a * w/3 - sin_a*4,
+				y + sin_a * h/3 + cos_a*4,
+				SDL_MapRGB(mpSdlSurfaceCircuit->format,0,0,0) // black
+			);
+			sdlPutPixel(mpSdlSurfaceCircuit,
+				x + cos_a * w/3 + sin_a*4,
+				y + sin_a * h/3 - cos_a*4,
+				SDL_MapRGB(mpSdlSurfaceCircuit->format,0,0,0) // black
+			);
+			if (mDownKey) { // if we are braking the slide is larger
+				sdlPutPixel(mpSdlSurfaceCircuit,
+					x + cos_a * w/3 - sin_a*3,
+					y + sin_a * h/3 + cos_a*3,
+					SDL_MapRGB(mpSdlSurfaceCircuit->format,0,0,0) // black
+				);
+				sdlPutPixel(mpSdlSurfaceCircuit,
+					x + cos_a * w/3 + sin_a*3,
+					y + sin_a * h/3 - cos_a*3,
+					SDL_MapRGB(mpSdlSurfaceCircuit->format,0,0,0) // black
+				);
+			}
+
+			if (NULL != mpSdlTextureCircuit) {
+				SDL_DestroyTexture(mpSdlTextureCircuit);
+				mpSdlTextureCircuit = NULL;
+			}
+			mpSdlTextureCircuit = SDL_CreateTextureFromSurface(mxSdlRenderer, mpSdlSurfaceCircuit);
+		}
+	}
+
+
 	SDL_Rect circ_rect;
 	circ_rect.w = mpSdlSurfaceCircuit->w;
 	circ_rect.h = mpSdlSurfaceCircuit->h;

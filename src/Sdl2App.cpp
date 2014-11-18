@@ -83,7 +83,7 @@ void Sdl2App::init(SDL_Window * sdl_window, int w, int h) {
 	mpSdlTexture = SDL_CreateTextureFromSurface(mpSdlRenderer, mpSdlImage);
 
 	mRace.setUp(mpSdlRenderer);
-	mRace.startTrack(1);
+	mRace.startTrack(12);
 
 	miLastUpdateTime = SDL_GetTicks();
 }
