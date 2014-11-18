@@ -24,6 +24,10 @@ private:
 	GtkWidget  * mpWidgetXSpeed;
 	GtkWidget  * mpWidgetYSpeed;
 	GtkWidget  * mpWidgetZSpeed;
+
+	GtkWidget  * mpWidgetYawAngle;
+	GtkWidget  * mpWidgetPitchAngle;
+	GtkWidget  * mpWidgetRollAngle;
 };
 
 #endif // SHOWINFO_H_FFA18220_6DEF_11E4_9C9B_10FEED04CD1C

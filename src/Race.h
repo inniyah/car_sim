@@ -23,7 +23,7 @@
 #include <SDL2/SDL_image.h>
 
 #include <stdint.h>
-#include <math.h>
+#include <cmath>
 
 #ifndef M_PI
 #define M_PI 3.141592654
@@ -38,7 +38,19 @@ public:
 	int lapflag, crashflag;
 	int color;
 
-	Car() : x_pos(0), y_pos(0), z_pos(0), angle(0), old_x(0), old_y(0), old_z(0), old_angle(0) {
+	Car() :
+		x_pos(0),
+		y_pos(0),
+		z_pos(0),
+		yaw_ang(0),
+		pitch_ang(0),
+		roll_ang(0),
+		old_x(0),
+		old_y(0),
+		old_z(0),
+		old_a_angle(0),
+		position_lights(true)
+	{
 	}
 
 	void resetTimer() {
@@ -51,32 +63,34 @@ public:
 		width  = w;
 		height = h;
 	}
-	void setPosition(float x, float y, float a) {
+	void setPosition(float x, float y, float azimut) {
 		x_pos = x;
 		y_pos = y;
-		angle = a;
+		yaw_ang = azimut;
 	}
-	void setZ(float z) {
+	void setZ(float z, float pitch, float roll) {
 		z_pos = z;
+		pitch_ang = pitch;
+		roll_ang = roll;
 	}
 	void computeNewPosition(unsigned int milliseconds) {
 		speed *= 0.995;
-		x_pos -= cos(angle) * speed;
-		y_pos -= sin(angle) * speed;
+		x_pos -= cos(yaw_ang) * speed;
+		y_pos -= sin(yaw_ang) * speed;
 	}
 	void turnLeft(float ch) {
 		if (speed < 0) {
-			angle += ch * COEFF;
+			yaw_ang += ch * COEFF;
 		} else {
-			angle -= ch * COEFF;
+			yaw_ang -= ch * COEFF;
 		}
 		fixAngle();
 	}
 	void turnRight(float ch) {
 		if (speed < 0) {
-			angle -= ch * COEFF;
+			yaw_ang -= ch * COEFF;
 		} else {
-			angle += ch * COEFF;
+			yaw_ang += ch * COEFF;
 		}
 		fixAngle();
 	}
@@ -96,13 +110,13 @@ public:
 		old_x = x_pos;
 		old_y = y_pos;
 		old_z = z_pos;
-		old_angle = angle;
+		old_a_angle = yaw_ang;
 	}
 	void restorePosition() {
 		x_pos = old_x;
 		y_pos = old_y;
 		z_pos = old_z;
-		angle = old_angle;
+		yaw_ang = old_a_angle;
 	}
 	float getX() {
 		return x_pos;
@@ -119,8 +133,14 @@ public:
 	float getW() {
 		return width;
 	}
-	float getAngle() {
-		return angle;
+	float getYaw() {
+		return yaw_ang;
+	}
+	float getPitch() {
+		return pitch_ang;
+	}
+	float getRoll() {
+		return roll_ang;
 	}
 	float getSpeed() {
 		return speed;
@@ -136,11 +156,11 @@ public:
 
 private:
 	void fixAngle() { // limit angle between 0 and 2*pi
-		if ( angle < 0. ) {
-			angle += 2. * M_PI;
+		if ( yaw_ang < 0. ) {
+			yaw_ang += 2. * M_PI;
 		}
-		if ( angle > 2. * M_PI ) {
-			angle -= 2. * M_PI;
+		if ( yaw_ang > 2. * M_PI ) {
+			yaw_ang -= 2. * M_PI;
 		}
 	}
 
@@ -151,13 +171,17 @@ private:
 	float x_pos;
 	float y_pos;
 	float z_pos;
-	float angle;
+	float yaw_ang;
+	float pitch_ang;
+	float roll_ang;
 	float speed;
 
 	float old_x;
 	float old_y;
 	float old_z;
-	float old_angle;
+	float old_a_angle;
+
+	bool position_lights;
 
 	unsigned int time_ms;
 };
