@@ -153,33 +153,33 @@ static void sdlPutPixel(SDL_Surface *surface, int x, int y, Uint32 pixel) {
 	}
 }
 
-/* load the car sprite and rotate it for every angles */
+// load the car sprite and rotate it for every angles
 void Race::generateCars() {
-  int i,j;
-  SDL_Surface *car;
-  char temp[20]="sprites/carX.png";
-  for (i=0;i<NB_CARS;i++) {
-    temp[11]='A'+i;
-    car=IMG_Load(temp); // load the car sprite
-    for (j=0;j<256;j++) { // and rotate it for all available angles
-      float x,y;
-      float tcos,tsin;
-      if ((mpaSdlSurfaceCars[i][j]=SDL_CreateRGBSurface(SDL_SWSURFACE, 30, 30, 32, RMASK, GMASK, BMASK, AMASK))==NULL) {
-        fprintf(stderr,"CreateRGBSurface failed: %s\n",SDL_GetError());
-        exit(1);
-      };
-      tcos=cos(2*M_PI*j/256);
-      tsin=sin(2*M_PI*j/256);
-      for (x=0;x<mpaSdlSurfaceCars[i][j]->w;x++) for (y=0;y<mpaSdlSurfaceCars[i][j]->h;y++) {
-        int x2,y2;
-        x2=(x-mpaSdlSurfaceCars[i][j]->w/2.0)*tcos+(y-mpaSdlSurfaceCars[i][j]->h/2.0)*tsin+car->w/2.0;
-        y2=(x-mpaSdlSurfaceCars[i][j]->w/2.0)*tsin-(y-mpaSdlSurfaceCars[i][j]->h/2.0)*tcos+car->h/2.0;
-        if (x2>0 && x2<car->w && y2>0 && y2<car->h)
-          sdlPutPixel(mpaSdlSurfaceCars[i][j],x,y,sdlGetPixel(car,x2,y2));
-      }
-    }
-    SDL_FreeSurface(car);
-  }
+	int i,j;
+	SDL_Surface *car;
+	char temp[20]="sprites/carX.png";
+	for (i = 0; i < NB_CARS; i++) {
+		temp[11]='A'+i;
+		car = IMG_Load(temp); // load the car sprite
+		for (j=0;j<256;j++) { // and rotate it for all available angles
+			float x,y;
+			float tcos,tsin;
+			if ((mpaSdlSurfaceCars[i][j]=SDL_CreateRGBSurface(SDL_SWSURFACE, 30, 30, 32, RMASK, GMASK, BMASK, AMASK))==NULL) {
+				fprintf(stderr,"CreateRGBSurface failed: %s\n",SDL_GetError());
+				exit(1);
+			};
+			tcos=cos(2*M_PI*j/256);
+			tsin=sin(2*M_PI*j/256);
+			for (x=0;x<mpaSdlSurfaceCars[i][j]->w;x++) for (y=0;y<mpaSdlSurfaceCars[i][j]->h;y++) {
+				int x2,y2;
+				x2 = (x - mpaSdlSurfaceCars[i][j]->w/2.0) * tcos + (y - mpaSdlSurfaceCars[i][j]->h/2.0) * tsin + car->w/2.0;
+				y2 = (x - mpaSdlSurfaceCars[i][j]->w/2.0) * tsin - (y - mpaSdlSurfaceCars[i][j]->h/2.0) * tcos + car->h/2.0;
+				if (x2>0 && x2<car->w && y2>0 && y2<car->h)
+				sdlPutPixel(mpaSdlSurfaceCars[i][j], x, y, sdlGetPixel(car,x2,y2));
+			}
+		}
+		SDL_FreeSurface(car);
+	}
 }
 
 void Race::darkenTrack(SDL_Surface *surface, float coef) {
@@ -199,17 +199,17 @@ void Race::darkenTrack(SDL_Surface *surface, float coef) {
 }
 
 void Race::startTrack(int id) {
-  if (id >= 0 && id < MAX_TRACKS) {
-	miTrackId = id;
-  }
-  char circname[128];
-  sprintf(circname, "tracks/%s.png", track[miTrackId].filename);
-  mpSdlSurfaceCircuit = IMG_Load(circname);
-  mpSdlTextureCircuit = SDL_CreateTextureFromSurface(mxSdlRenderer, mpSdlSurfaceCircuit);
+	if (id >= 0 && id < MAX_TRACKS) {
+		miTrackId = id;
+	}
+	char circname[128];
+	sprintf(circname, "tracks/%s.png", track[miTrackId].filename);
+	mpSdlSurfaceCircuit = IMG_Load(circname);
+	mpSdlTextureCircuit = SDL_CreateTextureFromSurface(mxSdlRenderer, mpSdlSurfaceCircuit);
 
-  char funcname[128];
-  sprintf(funcname, "tracks/%s_function.png", track[miTrackId].filename);
-  mpSdlSurfaceFunction = IMG_Load(funcname);
+	char funcname[128];
+	sprintf(funcname, "tracks/%s_function.png", track[miTrackId].filename);
+	mpSdlSurfaceFunction = IMG_Load(funcname);
 
 	mUpKey = false;
 	mDownKey = false;
@@ -226,69 +226,24 @@ void Race::startTrack(int id) {
 	car.lapflag = 0;
 }
 
-#if 0
-void Race::turn() {
-  SDL_Rect pos;
-  SDL_Event event;
-  int i;
-  int delay=DELAY;
-
-
-    delay=DELAY;
-
-    /* clear the old position */
-    pos.x=car.old_x-car.w/2;
-    pos.y=car.old_y-car.h/2;
-    pos.w=car.w;
-    pos.h=car.h;
-    SDL_BlitSurface(mpSdlSurfaceCircuit, &pos, mpSdlSurfaceScreen, &pos);
-        
-    /* display the car at the new position */
-    pos.x=car.x-car.w/2;
-    pos.y=car.y-car.h/2;
-    pos.w=car.w;
-    pos.h=car.h;
-    SDL_BlitSurface(mpaSdlSurfaceCars[miCarId][(unsigned char)(256*car.angle/2.0/M_PI)%256], NULL, mpSdlSurfaceScreen, &pos);
-
-    
-    /* if the car is fast or braking, it slides */
-    if ((kd && car.getSpeed()>0.5) || (car.getSpeed()>2.0 && !ku)) {
-      /* display tires slide */
-      if (show_tires) {
-        sdlPutPixel(mpSdlSurfaceCircuit,car.x+cos(car.angle)*car.w/3-sin(car.angle)*4,car.y+sin(car.angle)*car.h/3+cos(car.angle)*4,T_BLACK);
-        sdlPutPixel(mpSdlSurfaceCircuit,car.x+cos(car.angle)*car.w/3+sin(car.angle)*4,car.y+sin(car.angle)*car.h/3-cos(car.angle)*4,T_BLACK);
-        /* if we are braking the slide is larger */
-        if (kd) {
-          sdlPutPixel(mpSdlSurfaceCircuit,car.x+cos(car.angle)*car.w/3-sin(car.angle)*3,car.y+sin(car.angle)*car.h/3+cos(car.angle)*3,T_BLACK);
-          sdlPutPixel(mpSdlSurfaceCircuit,car.x+cos(car.angle)*car.w/3+sin(car.angle)*3,car.y+sin(car.angle)*car.h/3-cos(car.angle)*3,T_BLACK);
-        }
-      }
-    }
-   
-    //SDL_RenderPresent(mxSdlRenderer);
-    /* let the system breath */
-    SDL_Delay(delay);
-}
-#endif
-
 void Car::drawRawLight(SDL_Renderer * renderer, int x, int y, int r) {
-  SDL_RenderDrawPoint(renderer, x, y);
-  if (r>1) {
-    SDL_RenderDrawPoint(renderer, x-1, y   );
-    SDL_RenderDrawPoint(renderer, x+1, y   );
-    SDL_RenderDrawPoint(renderer, x,   y-1 );
-    SDL_RenderDrawPoint(renderer, x,   y+1 );
-  }
-  if (r>2) {
-    SDL_RenderDrawPoint(renderer, x-2, y   );
-    SDL_RenderDrawPoint(renderer, x+2, y   );
-    SDL_RenderDrawPoint(renderer, x,   y-2 );
-    SDL_RenderDrawPoint(renderer, x,   y+2 );
-    SDL_RenderDrawPoint(renderer, x-1, y-1 );
-    SDL_RenderDrawPoint(renderer, x-1, y+1 );
-    SDL_RenderDrawPoint(renderer, x+1, y-1 );
-    SDL_RenderDrawPoint(renderer, x+1, y+1 );
-  }
+	SDL_RenderDrawPoint(renderer, x, y);
+	if (r>1) {
+		SDL_RenderDrawPoint(renderer, x-1, y   );
+		SDL_RenderDrawPoint(renderer, x+1, y   );
+		SDL_RenderDrawPoint(renderer, x,   y-1 );
+		SDL_RenderDrawPoint(renderer, x,   y+1 );
+	}
+	if (r>2) {
+		SDL_RenderDrawPoint(renderer, x-2, y   );
+		SDL_RenderDrawPoint(renderer, x+2, y   );
+		SDL_RenderDrawPoint(renderer, x,   y-2 );
+		SDL_RenderDrawPoint(renderer, x,   y+2 );
+		SDL_RenderDrawPoint(renderer, x-1, y-1 );
+		SDL_RenderDrawPoint(renderer, x-1, y+1 );
+		SDL_RenderDrawPoint(renderer, x+1, y-1 );
+		SDL_RenderDrawPoint(renderer, x+1, y+1 );
+	}
 }
 
 void Car::drawBrakeLights(SDL_Renderer * renderer) {
@@ -321,6 +276,8 @@ void Car::drawPositionLights(SDL_Renderer * renderer) {
 }
 
 bool Race::draw() {
+
+	bool circuit_changed = false;
 	if ((mDownKey && car.getSpeed()>0.5) || (car.getSpeed()>2.0 && !mUpKey)) { // if the car is fast or braking, it slides
 		if (show_tires) { // display tires slide
 
@@ -354,15 +311,17 @@ bool Race::draw() {
 					SDL_MapRGB(mpSdlSurfaceCircuit->format,0,0,0) // black
 				);
 			}
-
-			if (NULL != mpSdlTextureCircuit) {
-				SDL_DestroyTexture(mpSdlTextureCircuit);
-				mpSdlTextureCircuit = NULL;
-			}
-			mpSdlTextureCircuit = SDL_CreateTextureFromSurface(mxSdlRenderer, mpSdlSurfaceCircuit);
+			circuit_changed = true;
 		}
 	}
 
+	if (circuit_changed) {
+		if (NULL != mpSdlTextureCircuit) {
+			SDL_DestroyTexture(mpSdlTextureCircuit);
+			mpSdlTextureCircuit = NULL;
+		}
+		mpSdlTextureCircuit = SDL_CreateTextureFromSurface(mxSdlRenderer, mpSdlSurfaceCircuit);
+	}
 
 	SDL_Rect circ_rect;
 	circ_rect.w = mpSdlSurfaceCircuit->w;
@@ -421,6 +380,8 @@ void Race::moveCar(unsigned int milliseconds) {
 	/* red layer (checkpoints) */
 	/* green layer (road quality) */
 	SDL_GetRGB(c,mpSdlSurfaceFunction->format, &r, &g, &b);
+
+	car.setZ(b);
 
 	if (mUpKey) {
 		car.incSpeed( 0.01 * 2. );
@@ -683,7 +644,7 @@ bool Race::getInfo(void * dest, unsigned int type, intptr_t param) {
 			float * f = (float*)dest;
 			f[0] = car.getX();
 			f[1] = car.getY();
-			f[2] = 0.0;
+			f[2] = car.getZ();
 			return true;
 		}
 		case INFO_SPEED_3F: {

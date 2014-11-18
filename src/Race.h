@@ -38,6 +38,9 @@ public:
 	int lapflag, crashflag;
 	int color;
 
+	Car() : x_pos(0), y_pos(0), z_pos(0), angle(0), old_x(0), old_y(0), old_z(0), old_angle(0) {
+	}
+
 	void resetTimer() {
 		time_ms = 0;
 	}
@@ -52,6 +55,9 @@ public:
 		x_pos = x;
 		y_pos = y;
 		angle = a;
+	}
+	void setZ(float z) {
+		z_pos = z;
 	}
 	void computeNewPosition(unsigned int milliseconds) {
 		speed *= 0.995;
@@ -89,11 +95,13 @@ public:
 	void backupPosition() {
 		old_x = x_pos;
 		old_y = y_pos;
+		old_z = z_pos;
 		old_angle = angle;
 	}
 	void restorePosition() {
 		x_pos = old_x;
 		y_pos = old_y;
+		z_pos = old_z;
 		angle = old_angle;
 	}
 	float getX() {
@@ -101,6 +109,9 @@ public:
 	}
 	float getY() {
 		return y_pos;
+	}
+	float getZ() {
+		return z_pos;
 	}
 	float getH() {
 		return height;
@@ -139,11 +150,13 @@ private:
 
 	float x_pos;
 	float y_pos;
+	float z_pos;
 	float angle;
 	float speed;
 
 	float old_x;
 	float old_y;
+	float old_z;
 	float old_angle;
 
 	unsigned int time_ms;
