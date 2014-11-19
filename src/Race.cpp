@@ -414,10 +414,15 @@ void Race::moveCar(unsigned int milliseconds) {
 	Uint8 right_front_r, right_front_g, right_front_b;
 	SDL_GetRGB(c, mpSdlSurfaceFunction->format, &right_front_r, &right_front_g, &right_front_b);
 
-	float pitch = atan( ( left_front_b + right_front_b - left_back_b - right_back_b ) / ( 2.0 * width ) );
-	float roll  = atan( ( right_front_b + right_back_b - left_front_b - left_back_b ) / ( 2.0 * height) );
+	float pitch_m = ( left_front_b + right_front_b - left_back_b - right_back_b ) / ( 2.0 * width );
+	float roll_m  = ( left_front_b + left_back_b - right_front_b - right_back_b) / ( 2.0 * height);
+	float pitch   = atan( pitch_m );
+	float roll    = atan( roll_m );
 
 	car.setZ(center_b, pitch, roll);
+
+	car.incYaw( roll_m * car.getSpeed() * 0.05 );
+	car.incSpeed( -pitch_m * 0.01 );
 
 	if (mUpKey) {
 		car.incSpeed( 0.01 * 2. );

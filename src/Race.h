@@ -78,13 +78,17 @@ public:
 		x_pos -= cos(yaw_ang) * speed;
 		y_pos -= sin(yaw_ang) * speed;
 	}
+	void incYaw(float ch) {
+		yaw_ang += ch * COEFF;
+		fixAngles();
+	}
 	void turnLeft(float ch) {
 		if (speed < 0) {
 			yaw_ang += ch * COEFF;
 		} else {
 			yaw_ang -= ch * COEFF;
 		}
-		fixAngle();
+		fixAngles();
 	}
 	void turnRight(float ch) {
 		if (speed < 0) {
@@ -92,7 +96,7 @@ public:
 		} else {
 			yaw_ang += ch * COEFF;
 		}
-		fixAngle();
+		fixAngles();
 	}
 	void setSpeed(float s) {
 		speed = s;
@@ -155,7 +159,7 @@ public:
 	void drawPositionLights(SDL_Renderer * renderer);
 
 private:
-	void fixAngle() { // limit angle between 0 and 2*pi
+	void fixAngles() { // limit angle between 0 and 2*pi
 		if ( yaw_ang < 0. ) {
 			yaw_ang += 2. * M_PI;
 		}
