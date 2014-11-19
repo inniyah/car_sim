@@ -408,8 +408,8 @@ void Race::moveCar(unsigned int milliseconds) {
 	Uint8 right_front_r, right_front_g, right_front_b;
 	SDL_GetRGB(c, mpSdlSurfaceFunction->format, &right_front_r, &right_front_g, &right_front_b);
 
-	float pitch_m = ( left_front_b + right_front_b - left_back_b - right_back_b ) / ( 2.0 * width );
-	float roll_m  = ( left_front_b + left_back_b - right_front_b - right_back_b) / ( 2.0 * height);
+	float pitch_m = ( ( left_front_b + right_front_b - left_back_b - right_back_b ) * Z_UNIT_TO_M ) / ( ( 2.0 * width ) * XY_UNIT_TO_M );
+	float roll_m  = ( ( left_front_b + left_back_b - right_front_b - right_back_b)  * Z_UNIT_TO_M ) / ( ( 2.0 * height) * XY_UNIT_TO_M );
 	float pitch   = atan( pitch_m );
 	float roll    = atan( roll_m );
 
@@ -716,9 +716,9 @@ bool Race::getInfo(void * dest, unsigned int type, intptr_t param) {
 		}
 		case INFO_POSITION_3F: {
 			float * f = (float*)dest;
-			f[0] = car.getX();
-			f[1] = car.getY();
-			f[2] = car.getZ();
+			f[0] = car.getX() * XY_UNIT_TO_M;
+			f[1] = car.getY() * XY_UNIT_TO_M;
+			f[2] = car.getZ() * Z_UNIT_TO_M;
 			return true;
 		}
 		case INFO_SPEED_3F: {

@@ -226,6 +226,9 @@ private:
 	static const int SCREEN_WIDTH  = 1024;
 	static const int SCREEN_HEIGHT = 768;
 
+	static const float XY_UNIT_TO_M = 0.01;
+	static const float  Z_UNIT_TO_M = 0.01;
+
 	// SDL interprets each pixel as a 32-bit number, so our masks must depend on the endianness (byte order) of the machine
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
 	static const Uint32 RMASK = 0xff000000;

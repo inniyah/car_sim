@@ -36,11 +36,11 @@ void InfoHandler::showInfo() {
 	float ang[3];
 	char  buff[16];
 	if (mxApp->getInfo(pos, INFO_POSITION_3F, 0)) {
-		snprintf(buff, sizeof(buff), "X: %.2f", pos[0]);
+		snprintf(buff, sizeof(buff), "X: %.3f cm", 1.0 * pos[0]);
 		gtk_label_set_text(GTK_LABEL(mpWidgetXPosition), buff);
-		snprintf(buff, sizeof(buff), "Y: %.2f", pos[1]);
+		snprintf(buff, sizeof(buff), "Y: %.3f cm", 1.0 * pos[1]);
 		gtk_label_set_text(GTK_LABEL(mpWidgetYPosition), buff);
-		snprintf(buff, sizeof(buff), "Z: %.2f", pos[2]);
+		snprintf(buff, sizeof(buff), "Z: %.3f cm", 1.0 * pos[2]);
 		gtk_label_set_text(GTK_LABEL(mpWidgetZPosition), buff);
 	}
 	if (mxApp->getInfo(spd, INFO_SPEED_3F, 0)) {
