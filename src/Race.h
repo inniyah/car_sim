@@ -30,106 +30,93 @@
 #endif
 
 class Car {
-	static const float COEFF = 1.;
-
 public:
 
 	int lastcheck, lap;
 	int lapflag, crashflag;
 	int color;
 
-	Car() :
-		x_pos(0),
-		y_pos(0),
-		z_pos(0),
-		yaw_ang(0),
-		pitch_ang(0),
-		roll_ang(0),
-		old_x(0),
-		old_y(0),
-		old_z(0),
-		old_a_angle(0),
-		position_lights(true)
-	{
+	Car() : position_lights(true) {
 	}
 
 	void resetTimer() {
-		time_ms = 0;
-	}
-	void updateTimer(unsigned int milliseconds) {
-		time_ms += milliseconds;
+		global_time_ms = 0;
+		inc_time_ms    = 0;
 	}
 	void setSize(int w, int h) {
-		width  = w;
-		height = h;
+		width         = w;
+		height        = h;
 	}
 	void setPosition(float x, float y, float azimut) {
-		x_pos = x;
-		y_pos = y;
-		yaw_ang = azimut;
+		now.pos_x     = x;
+		now.pos_y     = y;
+		now.ang_yaw   = azimut;
 	}
 	void setZ(float z, float pitch, float roll) {
-		z_pos = z;
-		pitch_ang = pitch;
-		roll_ang = roll;
+		now.pos_z     = z;
+		now.ang_pitch = pitch;
+		now.ang_roll  = roll;
 	}
 	void computeNewPosition(unsigned int milliseconds) {
-		speed *= 0.995;
-		x_pos -= cos(yaw_ang) * speed;
-		y_pos -= sin(yaw_ang) * speed;
+		inertia_coef *= 0.995;
+		now.pos_x -= cos(now.ang_yaw) * inertia_coef;
+		now.pos_y -= sin(now.ang_yaw) * inertia_coef;
 	}
 	void incYaw(float ch) {
-		yaw_ang += ch * COEFF;
+		now.ang_yaw += ch;
 		fixAngles();
 	}
 	void turnLeft(float ch) {
-		if (speed < 0) {
-			yaw_ang += ch * COEFF;
+		if (inertia_coef < 0) {
+			now.ang_yaw += ch;
 		} else {
-			yaw_ang -= ch * COEFF;
+			now.ang_yaw -= ch;
 		}
 		fixAngles();
 	}
 	void turnRight(float ch) {
-		if (speed < 0) {
-			yaw_ang -= ch * COEFF;
+		if (inertia_coef < 0) {
+			now.ang_yaw -= ch;
 		} else {
-			yaw_ang += ch * COEFF;
+			now.ang_yaw += ch;
 		}
 		fixAngles();
 	}
-	void setSpeed(float s) {
-		speed = s;
+	void setInertiaCoef(float s) {
+		inertia_coef = s;
 	}
-	void incSpeed(float is) {
-		speed += is * COEFF ;
+	void incInertiaCoef(float is) {
+		inertia_coef += is ;
 	}
-	void decSpeed(float ds) {
-		speed -= ds * COEFF ;
+	void decInertiaCoef(float ds) {
+		inertia_coef -= ds ;
 	}
-	void decSpeedByFactor(float fs) {
-		speed -= speed * fs;
+	void decInertiaCoefByFactor(float fs) {
+		inertia_coef -= inertia_coef * fs;
 	}
 	void backupPosition() {
-		old_x = x_pos;
-		old_y = y_pos;
-		old_z = z_pos;
-		old_a_angle = yaw_ang;
+		before = now;
 	}
 	void restorePosition() {
-		x_pos = old_x;
-		y_pos = old_y;
-		z_pos = old_z;
-		yaw_ang = old_a_angle;
+		now = before;
 	}
-	float getX() {
-		return x_pos;
+	float getPosX() {
+		return now.pos_x;
 	}
-	float getY() {
-		return y_pos;
+	float getPosY() {
+		return now.pos_y;
 	}
-	float getZ() {
-		return z_pos;
+	float getPosZ() {
+		return now.pos_z;
+	}
+	float getSpeedX() {
+		return now.spd_x;
+	}
+	float getSpeedY() {
+		return now.spd_y;
+	}
+	float getSpeedZ() {
+		return now.spd_z;
 	}
 	float getH() {
 		return height;
@@ -138,21 +125,22 @@ public:
 		return width;
 	}
 	float getYaw() {
-		return yaw_ang;
+		return now.ang_yaw;
 	}
 	float getPitch() {
-		return pitch_ang;
+		return now.ang_pitch;
 	}
 	float getRoll() {
-		return roll_ang;
+		return now.ang_roll;
 	}
-	float getSpeed() {
-		return speed;
+	float getInertiaCoef() {
+		return inertia_coef;
 	}
 	unsigned int getTimer() {
-		return time_ms;
+		return global_time_ms;
 	}
 
+	void updateTimer(unsigned int milliseconds);
 	void drawBrakeLights(SDL_Renderer * renderer);
 	void drawReversingLights(SDL_Renderer * renderer);
 	void drawWarningLights(SDL_Renderer * renderer);
@@ -160,11 +148,11 @@ public:
 
 private:
 	void fixAngles() { // limit angle between 0 and 2*pi
-		if ( yaw_ang < 0. ) {
-			yaw_ang += 2. * M_PI;
+		if ( now.ang_yaw < 0. ) {
+			now.ang_yaw += 2. * M_PI;
 		}
-		if ( yaw_ang > 2. * M_PI ) {
-			yaw_ang -= 2. * M_PI;
+		if ( now.ang_yaw > 2. * M_PI ) {
+			now.ang_yaw -= 2. * M_PI;
 		}
 	}
 
@@ -172,22 +160,43 @@ private:
 
 	int width, height;
 
-	float x_pos;
-	float y_pos;
-	float z_pos;
-	float yaw_ang;
-	float pitch_ang;
-	float roll_ang;
-	float speed;
+	struct State {
+		float pos_x;
+		float pos_y;
+		float pos_z;
+		float ang_yaw;
+		float ang_pitch;
+		float ang_roll;
+		float spd_x;
+		float spd_y;
+		float spd_z;
+		float acc_x;
+		float acc_y;
+		float acc_z;
+		State() :
+			pos_x(0),
+			pos_y(0),
+			pos_z(0),
+			ang_yaw(0),
+			ang_pitch(0),
+			ang_roll(0),
+			spd_x(0),
+			spd_y(0),
+			spd_z(0),
+			acc_x(0),
+			acc_y(0),
+			acc_z(0)
+		{
+		}
+	};
 
-	float old_x;
-	float old_y;
-	float old_z;
-	float old_a_angle;
+	State now;
+	State before;
 
+	float inertia_coef;
 	bool position_lights;
-
-	unsigned int time_ms;
+	unsigned int global_time_ms;
+	unsigned int inc_time_ms;
 };
 
 struct Track {

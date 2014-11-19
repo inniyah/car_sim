@@ -250,12 +250,24 @@ void Race::startTrack(int id) {
 
 	car.setSize( mpaSdlSurfaceCars[0][0]->w, mpaSdlSurfaceCars[0][0]->h);
 	car.setPosition( track[miTrackId].start_x, track[miTrackId].start_y, track[miTrackId].start_a * 2. * M_PI / 360. );
-	car.setSpeed(0);
+	car.setInertiaCoef(0);
 	car.resetTimer();
 	car.backupPosition();
 
 	car.lastcheck = 0;
 	car.lapflag = 0;
+}
+
+void Car::updateTimer(unsigned int milliseconds) {
+	inc_time_ms     = milliseconds;
+	global_time_ms += milliseconds;
+	float elapsed_time_s = inc_time_ms / 1000.0;
+	now.spd_x = (now.pos_x - before.pos_x) / elapsed_time_s;
+	now.spd_y = (now.pos_y - before.pos_y) / elapsed_time_s;
+	now.spd_z = (now.pos_z - before.pos_z) / elapsed_time_s;
+	now.acc_x = (now.spd_x - before.spd_x) / elapsed_time_s;
+	now.acc_y = (now.spd_y - before.spd_y) / elapsed_time_s;
+	now.acc_z = (now.spd_z - before.spd_z) / elapsed_time_s;
 }
 
 void Car::drawRawLight(SDL_Renderer * renderer, int x, int y, int r) {
@@ -280,32 +292,32 @@ void Car::drawRawLight(SDL_Renderer * renderer, int x, int y, int r) {
 
 void Car::drawBrakeLights(SDL_Renderer * renderer) {
 	SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255); // Red
-	drawRawLight(renderer, x_pos + cos(yaw_ang) * width/3 - sin(yaw_ang)*4, y_pos + sin(yaw_ang) * height/3 + cos(yaw_ang)*4, 3);
-	drawRawLight(renderer, x_pos + cos(yaw_ang) * width/3 + sin(yaw_ang)*4, y_pos + sin(yaw_ang) * height/3 - cos(yaw_ang)*4, 3);
+	drawRawLight(renderer, now.pos_x + cos(now.ang_yaw) * width/3 - sin(now.ang_yaw)*4, now.pos_y + sin(now.ang_yaw) * height/3 + cos(now.ang_yaw)*4, 3);
+	drawRawLight(renderer, now.pos_x + cos(now.ang_yaw) * width/3 + sin(now.ang_yaw)*4, now.pos_y + sin(now.ang_yaw) * height/3 - cos(now.ang_yaw)*4, 3);
 }
 
 void Car::drawReversingLights(SDL_Renderer * renderer) {
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // White
-	drawRawLight(renderer, x_pos + cos(yaw_ang) * width/3 - sin(yaw_ang)*4, y_pos + sin(yaw_ang) * height/3 + cos(yaw_ang)*4, 3);
-	drawRawLight(renderer, x_pos + cos(yaw_ang) * width/3 + sin(yaw_ang)*4, y_pos + sin(yaw_ang) * height/3 - cos(yaw_ang)*4, 3);
+	drawRawLight(renderer, now.pos_x + cos(now.ang_yaw) * width/3 - sin(now.ang_yaw)*4, now.pos_y + sin(now.ang_yaw) * height/3 + cos(now.ang_yaw)*4, 3);
+	drawRawLight(renderer, now.pos_x + cos(now.ang_yaw) * width/3 + sin(now.ang_yaw)*4, now.pos_y + sin(now.ang_yaw) * height/3 - cos(now.ang_yaw)*4, 3);
 }
 
 void Car::drawWarningLights(SDL_Renderer * renderer) {
 	SDL_SetRenderDrawColor(renderer, 255, 200, 0, 255); // Orange
-	drawRawLight(renderer, x_pos - cos(yaw_ang) * width/3 - sin(yaw_ang)*5, y_pos - sin(yaw_ang) * height/3 + cos(yaw_ang)*5, 2);
-	drawRawLight(renderer, x_pos - cos(yaw_ang) * width/3 + sin(yaw_ang)*5, y_pos - sin(yaw_ang) * height/3 - cos(yaw_ang)*5, 2);
-	drawRawLight(renderer, x_pos + cos(yaw_ang) * width/3 - sin(yaw_ang)*5, y_pos + sin(yaw_ang) * height/3 + cos(yaw_ang)*5, 2);
-	drawRawLight(renderer, x_pos + cos(yaw_ang) * width/3 + sin(yaw_ang)*5, y_pos + sin(yaw_ang) * height/3 - cos(yaw_ang)*5, 2);
+	drawRawLight(renderer, now.pos_x - cos(now.ang_yaw) * width/3 - sin(now.ang_yaw)*5, now.pos_y - sin(now.ang_yaw) * height/3 + cos(now.ang_yaw)*5, 2);
+	drawRawLight(renderer, now.pos_x - cos(now.ang_yaw) * width/3 + sin(now.ang_yaw)*5, now.pos_y - sin(now.ang_yaw) * height/3 - cos(now.ang_yaw)*5, 2);
+	drawRawLight(renderer, now.pos_x + cos(now.ang_yaw) * width/3 - sin(now.ang_yaw)*5, now.pos_y + sin(now.ang_yaw) * height/3 + cos(now.ang_yaw)*5, 2);
+	drawRawLight(renderer, now.pos_x + cos(now.ang_yaw) * width/3 + sin(now.ang_yaw)*5, now.pos_y + sin(now.ang_yaw) * height/3 - cos(now.ang_yaw)*5, 2);
 }
 
 void Car::drawPositionLights(SDL_Renderer * renderer) {
 	if (position_lights) {
 		SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255); // Red
-		drawRawLight(renderer, x_pos + cos(yaw_ang) * width/3 - sin(yaw_ang)*3, y_pos + sin(yaw_ang) * height/3 + cos(yaw_ang)*4, 2);
-		drawRawLight(renderer, x_pos + cos(yaw_ang) * width/3 + sin(yaw_ang)*3, y_pos + sin(yaw_ang) * height/3 - cos(yaw_ang)*4, 2);
+		drawRawLight(renderer, now.pos_x + cos(now.ang_yaw) * width/3 - sin(now.ang_yaw)*3, now.pos_y + sin(now.ang_yaw) * height/3 + cos(now.ang_yaw)*4, 2);
+		drawRawLight(renderer, now.pos_x + cos(now.ang_yaw) * width/3 + sin(now.ang_yaw)*3, now.pos_y + sin(now.ang_yaw) * height/3 - cos(now.ang_yaw)*4, 2);
 		SDL_SetRenderDrawColor(renderer, 255, 255, 100, 255); // Yellow
-		drawRawLight(renderer, x_pos - cos(yaw_ang) * width/3 - sin(yaw_ang)*4, y_pos - sin(yaw_ang) * height/3 + cos(yaw_ang)*4, 3);
-		drawRawLight(renderer, x_pos - cos(yaw_ang) * width/3 + sin(yaw_ang)*4, y_pos - sin(yaw_ang) * height/3 - cos(yaw_ang)*4, 3);
+		drawRawLight(renderer, now.pos_x - cos(now.ang_yaw) * width/3 - sin(now.ang_yaw)*4, now.pos_y - sin(now.ang_yaw) * height/3 + cos(now.ang_yaw)*4, 3);
+		drawRawLight(renderer, now.pos_x - cos(now.ang_yaw) * width/3 + sin(now.ang_yaw)*4, now.pos_y - sin(now.ang_yaw) * height/3 - cos(now.ang_yaw)*4, 3);
 	}
 }
 
@@ -329,8 +341,8 @@ bool Race::draw() {
 	SDL_RenderCopy(mxSdlRenderer, mpSdlTextureCircuit, NULL, &circ_rect);
 
 	SDL_Rect car_rect;
-	car_rect.x = car.getX() - car.getW()/2;
-	car_rect.y = car.getY() - car.getH()/2;
+	car_rect.x = car.getPosX() - car.getW()/2;
+	car_rect.y = car.getPosY() - car.getH()/2;
 	car_rect.w = car.getW();
 	car_rect.h = car.getH();
 
@@ -346,15 +358,15 @@ bool Race::draw() {
 		car.drawPositionLights(mxSdlRenderer);
 	}
 
-	if ( mDownKey && car.getSpeed() > 0.1 ) {
+	if ( mDownKey && car.getInertiaCoef() > 0.1 ) {
 		car.drawBrakeLights(mxSdlRenderer);
 	}
 
-	if ( car.getSpeed() < -0.1 ) {
+	if ( car.getInertiaCoef() < -0.1 ) {
 		car.drawReversingLights(mxSdlRenderer);
 	}
 
-	if ( car.getSpeed() >= -0.1 && car.getSpeed() <= 0.1 && (SDL_GetTicks() % 800) > 400 ) {
+	if ( car.getInertiaCoef() >= -0.1 && car.getInertiaCoef() <= 0.1 && (SDL_GetTicks() % 800) > 400 ) {
 		car.drawWarningLights(mxSdlRenderer);
 	}
 
@@ -370,8 +382,8 @@ void Race::moveCar(unsigned int milliseconds) {
 	// reset flags
 	car.crashflag=0;
 
-	float center_x = car.getX();
-	float center_y = car.getY();
+	float center_x = car.getPosX();
+	float center_y = car.getPosY();
 	Uint8 center_r, center_g, center_b;
 
 	// get the pixel color under the center of car in the function map
@@ -415,14 +427,14 @@ void Race::moveCar(unsigned int milliseconds) {
 
 	car.setZ(center_b, pitch, roll);
 
-	car.incYaw( roll_m * car.getSpeed() * 0.05 );
-	car.incSpeed( -pitch_m * 0.01 );
+	car.incYaw( roll_m * car.getInertiaCoef() * 0.05 );
+	car.incInertiaCoef( -pitch_m * 0.01 );
 
 	if (mUpKey) {
-		car.incSpeed( 0.01 * 2. );
+		car.incInertiaCoef( 0.01 * 2. );
 	}
 	if (mDownKey) {
-		car.decSpeed( 0.01 );
+		car.decInertiaCoef( 0.01 );
 	}
 	if (mLeftKey) {
 		car.turnLeft( 0.01 );
@@ -431,9 +443,9 @@ void Race::moveCar(unsigned int milliseconds) {
 		car.turnRight( 0.01 );
 	}
 
-	// update the speed depending on the road quality
+	// update the inertia_coef depending on the road quality
 	float average_g = ( left_back_g + right_back_g + left_front_g + right_front_g ) / 4.0 ;
-	car.decSpeedByFactor( (255 - average_g) / 1000. );
+	car.decInertiaCoefByFactor( (255 - average_g) / 1000. );
 
 	// if it is a wall we move back to the last position
 	if ( 0 == center_g || 0 == left_back_g || 0 == right_back_g || 0 == left_front_g || 0 == right_front_g ) {
@@ -444,18 +456,17 @@ void Race::moveCar(unsigned int milliseconds) {
 	// save the old position and compute the new one
 	car.backupPosition();
 	car.computeNewPosition(milliseconds);
-	car.updateTimer(milliseconds);
 
 	// collision with the border of the screen
 	float radius = ( car.getH() < car.getW() ? car.getW() : car.getH() ) / 2.0;
 	if (
-		car.getX() < radius ||
-		car.getX() > mpSdlSurfaceFunction->w - radius ||
-		car.getY() < radius ||
-		car.getY() > mpSdlSurfaceFunction->h - radius
+		car.getPosX() < radius ||
+		car.getPosX() > mpSdlSurfaceFunction->w - radius ||
+		car.getPosY() < radius ||
+		car.getPosY() > mpSdlSurfaceFunction->h - radius
 	) {
 		car.restorePosition();
-		car.setSpeed(0);
+		car.setInertiaCoef(0);
 		car.crashflag = 1;
 	}
 
@@ -485,11 +496,11 @@ void Race::moveCar(unsigned int milliseconds) {
 		car.lapflag = 2;
 	}
 
-	if ((mDownKey && car.getSpeed()>0.5) || (car.getSpeed()>2.0 && !mUpKey)) { // if the car is fast or braking, it slides
+	if ((mDownKey && car.getInertiaCoef()>0.5) || (car.getInertiaCoef()>2.0 && !mUpKey)) { // if the car is fast or braking, it slides
 		if (show_tires) { // display tires slide
 
-			float x = car.getX();
-			float y = car.getY();
+			float x = car.getPosX();
+			float y = car.getPosY();
 			float w = car.getW();
 			float h = car.getH();
 			float angle = car.getYaw();
@@ -521,6 +532,8 @@ void Race::moveCar(unsigned int milliseconds) {
 			mSdlSurfaceFunctionIsDirty = true;
 		}
 	}
+
+	car.updateTimer(milliseconds);
 }
 
 unsigned int Race::update(unsigned int milliseconds) {
@@ -716,18 +729,16 @@ bool Race::getInfo(void * dest, unsigned int type, intptr_t param) {
 		}
 		case INFO_POSITION_3F: {
 			float * f = (float*)dest;
-			f[0] = car.getX() * XY_UNIT_TO_M;
-			f[1] = car.getY() * XY_UNIT_TO_M;
-			f[2] = car.getZ() * Z_UNIT_TO_M;
+			f[0] = car.getPosX() * XY_UNIT_TO_M;
+			f[1] = car.getPosY() * XY_UNIT_TO_M;
+			f[2] = car.getPosZ() * Z_UNIT_TO_M;
 			return true;
 		}
 		case INFO_SPEED_3F: {
 			float * f = (float*)dest;
-			float speed = car.getSpeed();
-			float angle = car.getYaw();
-			f[0] = -speed*cos(angle);
-			f[1] = speed*sin(angle);
-			f[2] = 0.0;
+			f[0] = car.getSpeedX() * XY_UNIT_TO_M;
+			f[1] = car.getSpeedY() * XY_UNIT_TO_M;
+			f[2] = car.getSpeedZ() * Z_UNIT_TO_M;
 			return true;
 		}
 		case INFO_ANGLES_3F: {
