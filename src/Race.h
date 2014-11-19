@@ -244,6 +244,7 @@ private:
 	SDL_Texture * mpSdlTextureCircuit;
 	SDL_Surface * mpSdlSurfaceCircuit;
 	SDL_Surface * mpSdlSurfaceFunction;
+	bool mSdlSurfaceFunctionIsDirty;
 
 	int miTrackId;
 	static const Track track[MAX_TRACKS];

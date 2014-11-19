@@ -57,41 +57,6 @@ const Track Race::track[] = {
 	{ NULL,       0,   0,   0,     "",                               "" },
 };
 
-Race::Race() :
-	mxSdlRenderer(NULL),
-	mpSdlTextureCircuit(NULL),
-	mpSdlSurfaceCircuit(NULL),
-	mpSdlSurfaceFunction(NULL),
-	miTrackId(0),
-	miCarId(0),
-	show_tires(true),
-	mUpKey(false),
-	mDownKey(false),
-	mLeftKey(false),
-	mRightKey(false)
-{
-	generateCars();
-}
-
-Race::~Race() {
-	if (NULL != mpSdlTextureCircuit) {
-		SDL_DestroyTexture(mpSdlTextureCircuit);
-		mpSdlTextureCircuit = NULL;
-	}
-	if (NULL != mpSdlSurfaceCircuit) {
-		SDL_FreeSurface(mpSdlSurfaceCircuit);
-		mpSdlSurfaceCircuit = NULL;
-	}
-	if (NULL != mpSdlSurfaceFunction) {
-		SDL_FreeSurface(mpSdlSurfaceFunction);
-		mpSdlSurfaceFunction = NULL;
-	}
-}
-
-void Race::setUp(SDL_Renderer * renderer) {
-	mxSdlRenderer = renderer;
-}
-
 /*
  * Return the pixel value at (x, y)
  * NOTE: The surface must be locked before calling this!
@@ -153,6 +118,42 @@ static void sdlPutPixel(SDL_Surface *surface, int x, int y, Uint32 pixel) {
 	}
 }
 
+Race::Race() :
+	mxSdlRenderer(NULL),
+	mpSdlTextureCircuit(NULL),
+	mpSdlSurfaceCircuit(NULL),
+	mpSdlSurfaceFunction(NULL),
+	mSdlSurfaceFunctionIsDirty(true),
+	miTrackId(0),
+	miCarId(0),
+	show_tires(true),
+	mUpKey(false),
+	mDownKey(false),
+	mLeftKey(false),
+	mRightKey(false)
+{
+	generateCars();
+}
+
+Race::~Race() {
+	if (NULL != mpSdlTextureCircuit) {
+		SDL_DestroyTexture(mpSdlTextureCircuit);
+		mpSdlTextureCircuit = NULL;
+	}
+	if (NULL != mpSdlSurfaceCircuit) {
+		SDL_FreeSurface(mpSdlSurfaceCircuit);
+		mpSdlSurfaceCircuit = NULL;
+	}
+	if (NULL != mpSdlSurfaceFunction) {
+		SDL_FreeSurface(mpSdlSurfaceFunction);
+		mpSdlSurfaceFunction = NULL;
+	}
+}
+
+void Race::setUp(SDL_Renderer * renderer) {
+	mxSdlRenderer = renderer;
+}
+
 // load the car sprite and rotate it for every angles
 void Race::generateCars() {
 	int i,j;
@@ -205,11 +206,46 @@ void Race::startTrack(int id) {
 	char circname[128];
 	sprintf(circname, "tracks/%s.png", track[miTrackId].filename);
 	mpSdlSurfaceCircuit = IMG_Load(circname);
-	mpSdlTextureCircuit = SDL_CreateTextureFromSurface(mxSdlRenderer, mpSdlSurfaceCircuit);
 
 	char funcname[128];
 	sprintf(funcname, "tracks/%s_function.png", track[miTrackId].filename);
 	mpSdlSurfaceFunction = IMG_Load(funcname);
+
+	for (int x = 0; x < mpSdlSurfaceCircuit->w; ++x) {
+		Uint8 prev_b = 0;
+		for (int y = 0; y < mpSdlSurfaceCircuit->h; ++y) {
+			Uint32 c = sdlGetPixel(mpSdlSurfaceFunction, x, y);
+			Uint8 r, g, b;
+			SDL_GetRGB(c, mpSdlSurfaceFunction->format, &r, &g, &b);
+			if (0 != y) {
+				if ( (prev_b / 4) > (b / 4) ) {
+					sdlPutPixel(mpSdlSurfaceCircuit, x, y, SDL_MapRGB(mpSdlSurfaceCircuit->format, 0, 0, 0)); // black
+				} else if ( (prev_b / 4) < (b / 4) ) {
+					sdlPutPixel(mpSdlSurfaceCircuit, x, y, SDL_MapRGB(mpSdlSurfaceCircuit->format, 255, 255, 255)); // white
+				}
+			}
+			prev_b = b;
+		}
+	}
+
+	for (int y = 0; y < mpSdlSurfaceCircuit->h; ++y) {
+		Uint8 prev_b = 0;
+		for (int x = 0; x < mpSdlSurfaceCircuit->w; ++x) {
+			Uint32 c = sdlGetPixel(mpSdlSurfaceFunction, x, y);
+			Uint8 r, g, b;
+			SDL_GetRGB(c, mpSdlSurfaceFunction->format, &r, &g, &b);
+			if (0 != x) {
+				if ( (prev_b / 4) > (b / 4) ) {
+					sdlPutPixel(mpSdlSurfaceCircuit, x, y, SDL_MapRGB(mpSdlSurfaceCircuit->format, 0, 0, 0)); // black
+				} else if ( (prev_b / 4) < (b / 4) ) {
+					sdlPutPixel(mpSdlSurfaceCircuit, x, y, SDL_MapRGB(mpSdlSurfaceCircuit->format, 255, 255, 255)); // white
+				}
+			}
+			prev_b = b;
+		}
+	}
+
+	mpSdlTextureCircuit = SDL_CreateTextureFromSurface(mxSdlRenderer, mpSdlSurfaceCircuit);
 
 	mUpKey = false;
 	mDownKey = false;
@@ -278,51 +314,13 @@ void Car::drawPositionLights(SDL_Renderer * renderer) {
 }
 
 bool Race::draw() {
-
-	bool circuit_changed = false;
-	if ((mDownKey && car.getSpeed()>0.5) || (car.getSpeed()>2.0 && !mUpKey)) { // if the car is fast or braking, it slides
-		if (show_tires) { // display tires slide
-
-			float x = car.getX();
-			float y = car.getY();
-			float w = car.getW();
-			float h = car.getH();
-			float angle = car.getYaw();
-			float cos_a = cos(angle);
-			float sin_a = sin(angle);
-
-			sdlPutPixel( mpSdlSurfaceCircuit,
-				x + cos_a * w/3 - sin_a*4,
-				y + sin_a * h/3 + cos_a*4,
-				SDL_MapRGB(mpSdlSurfaceCircuit->format,0,0,0) // black
-			);
-			sdlPutPixel(mpSdlSurfaceCircuit,
-				x + cos_a * w/3 + sin_a*4,
-				y + sin_a * h/3 - cos_a*4,
-				SDL_MapRGB(mpSdlSurfaceCircuit->format,0,0,0) // black
-			);
-			if (mDownKey) { // if we are braking the slide is larger
-				sdlPutPixel(mpSdlSurfaceCircuit,
-					x + cos_a * w/3 - sin_a*3,
-					y + sin_a * h/3 + cos_a*3,
-					SDL_MapRGB(mpSdlSurfaceCircuit->format,0,0,0) // black
-				);
-				sdlPutPixel(mpSdlSurfaceCircuit,
-					x + cos_a * w/3 + sin_a*3,
-					y + sin_a * h/3 - cos_a*3,
-					SDL_MapRGB(mpSdlSurfaceCircuit->format,0,0,0) // black
-				);
-			}
-			circuit_changed = true;
-		}
-	}
-
-	if (circuit_changed) {
+	if (mSdlSurfaceFunctionIsDirty) {
 		if (NULL != mpSdlTextureCircuit) {
 			SDL_DestroyTexture(mpSdlTextureCircuit);
 			mpSdlTextureCircuit = NULL;
 		}
 		mpSdlTextureCircuit = SDL_CreateTextureFromSurface(mxSdlRenderer, mpSdlSurfaceCircuit);
+		mSdlSurfaceFunctionIsDirty = false;
 	}
 
 	SDL_Rect circ_rect;
@@ -489,6 +487,43 @@ void Race::moveCar(unsigned int milliseconds) {
 	if (center_r/8 == 0 && center_r !=0 && car.lastcheck != 31 && car.lastcheck > 0) {
 		car.lastcheck = 0;
 		car.lapflag = 2;
+	}
+
+	if ((mDownKey && car.getSpeed()>0.5) || (car.getSpeed()>2.0 && !mUpKey)) { // if the car is fast or braking, it slides
+		if (show_tires) { // display tires slide
+
+			float x = car.getX();
+			float y = car.getY();
+			float w = car.getW();
+			float h = car.getH();
+			float angle = car.getYaw();
+			float cos_a = cos(angle);
+			float sin_a = sin(angle);
+
+			sdlPutPixel( mpSdlSurfaceCircuit,
+				x + cos_a * w/3 - sin_a*4,
+				y + sin_a * h/3 + cos_a*4,
+				SDL_MapRGB(mpSdlSurfaceCircuit->format,0,0,0) // black
+			);
+			sdlPutPixel(mpSdlSurfaceCircuit,
+				x + cos_a * w/3 + sin_a*4,
+				y + sin_a * h/3 - cos_a*4,
+				SDL_MapRGB(mpSdlSurfaceCircuit->format,0,0,0) // black
+			);
+			if (mDownKey) { // if we are braking the slide is larger
+				sdlPutPixel(mpSdlSurfaceCircuit,
+					x + cos_a * w/3 - sin_a*3,
+					y + sin_a * h/3 + cos_a*3,
+					SDL_MapRGB(mpSdlSurfaceCircuit->format,0,0,0) // black
+				);
+				sdlPutPixel(mpSdlSurfaceCircuit,
+					x + cos_a * w/3 + sin_a*3,
+					y + sin_a * h/3 - cos_a*3,
+					SDL_MapRGB(mpSdlSurfaceCircuit->format,0,0,0) // black
+				);
+			}
+			mSdlSurfaceFunctionIsDirty = true;
+		}
 	}
 }
 
