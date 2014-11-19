@@ -218,10 +218,8 @@ void Race::startTrack(int id) {
 			Uint8 r, g, b;
 			SDL_GetRGB(c, mpSdlSurfaceFunction->format, &r, &g, &b);
 			if (0 != y) {
-				if ( (prev_b / 4) > (b / 4) ) {
-					sdlPutPixel(mpSdlSurfaceCircuit, x, y, SDL_MapRGB(mpSdlSurfaceCircuit->format, 0, 0, 0)); // black
-				} else if ( (prev_b / 4) < (b / 4) ) {
-					sdlPutPixel(mpSdlSurfaceCircuit, x, y, SDL_MapRGB(mpSdlSurfaceCircuit->format, 255, 255, 255)); // white
+				if ( (prev_b / 4) != (b / 4) ) {
+					sdlPutPixel(mpSdlSurfaceCircuit, x, y, SDL_MapRGB(mpSdlSurfaceCircuit->format, b, b, b));
 				}
 			}
 			prev_b = b;
@@ -235,10 +233,8 @@ void Race::startTrack(int id) {
 			Uint8 r, g, b;
 			SDL_GetRGB(c, mpSdlSurfaceFunction->format, &r, &g, &b);
 			if (0 != x) {
-				if ( (prev_b / 4) > (b / 4) ) {
-					sdlPutPixel(mpSdlSurfaceCircuit, x, y, SDL_MapRGB(mpSdlSurfaceCircuit->format, 0, 0, 0)); // black
-				} else if ( (prev_b / 4) < (b / 4) ) {
-					sdlPutPixel(mpSdlSurfaceCircuit, x, y, SDL_MapRGB(mpSdlSurfaceCircuit->format, 255, 255, 255)); // white
+				if ( (prev_b / 4) != (b / 4) ) {
+					sdlPutPixel(mpSdlSurfaceCircuit, x, y, SDL_MapRGB(mpSdlSurfaceCircuit->format, b, b, b));
 				}
 			}
 			prev_b = b;
