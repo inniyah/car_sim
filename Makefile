@@ -33,6 +33,7 @@ $(PROGRAM): $(OBJS) slmath/libslmath.a
 .depend depend dep:
 	g++ $(CFLAGS) -MM $(SRCS) $(INCS) $(PKG_CONFIG_CFLAGS) > .depend
 	$(MAKE) -C slmath .depend
+	$(MAKE) -C gamepad .depend
 
 ifeq (.depend,$(wildcard .depend))
 include .depend
@@ -40,6 +41,7 @@ endif
 
 slmath/libslmath.a:
 	$(MAKE) -C slmath libslmath.a
+	$(MAKE) -C gamepad libgamepad.a
 
 clean:
 	rm -f $(OBJS)
@@ -48,5 +50,6 @@ clean:
 
 clean-all: clean
 	$(MAKE) -C slmath clean
+	$(MAKE) -C gamepad clean
 
 .PHONY: all depend dep clean install

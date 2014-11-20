@@ -4,8 +4,10 @@ all: static
 static: $(LIBRARY).a
 dynamic: $(LIBRARY).so
 
-MAJOR=0
-MINOR=0
+include version
+
+MAJOR = $(VERSION_MAJOR)
+MINOR = $(VERSION_MINOR)
 
 SOURCES = $(shell find src -name "*.cpp")
 INCLUDE_DIR = include
