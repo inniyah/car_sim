@@ -211,4 +211,6 @@ int main(int argc, char ** argv) {
 	glMatrixMode(GL_MODELVIEW);
 	
 	glutMainLoop();
+	
+	return EXIT_SUCCESS;
 }
