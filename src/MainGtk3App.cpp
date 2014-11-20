@@ -3,6 +3,8 @@
 #include "InfoHandler.h"
 #include "Common.h"
 
+#include <gamepad/Gamepad.h>
+
 #include <cstdio>
 #include <cstdarg>
 
@@ -64,6 +66,16 @@ struct Sdl2Area {
 	static gboolean eventFocus       (GtkWidget * widget, GdkEventFocus       * focus,    gpointer user_data);
 };
 
+struct Gamepad {
+	static void onButtonDown(struct Gamepad_device * device, unsigned int buttonID, double timestamp, void * context);
+	static void onButtonUp(struct Gamepad_device * device, unsigned int buttonID, double timestamp, void * context);
+	static void onAxisMoved(struct Gamepad_device * device, unsigned int axisID, float value, float lastValue, double timestamp, void * context);
+	static void onDeviceAttached(struct Gamepad_device * device, void * context);
+	static void onDeviceRemoved(struct Gamepad_device * device, void * context);
+	static void initGamepad(void * context);
+	static void shutdownGamepad();
+};
+
 GType main_app_get_type(void) G_GNUC_CONST;
 MainApp * main_app_new(void);
 
@@ -88,6 +100,7 @@ struct MainAppPrivateData {
 
 gboolean MainApp::draw(gpointer user_data) {
 	MainAppPrivateData *priv = MAIN_APP_GET_PRIVATE(G_APPLICATION (user_data));
+	Gamepad_processEvents();
 	priv->sdl_app->processEvents();
 	priv->sdl_app->update();
 	priv->sdl_app->draw();
@@ -458,6 +471,68 @@ gboolean Sdl2Area::eventFocus(GtkWidget *widget, GdkEventFocus *focus, gpointer 
 	return TRUE;
 }
 
+void Gamepad::onButtonDown(struct Gamepad_device * device, unsigned int buttonID, double timestamp, void * context) {
+	//MainAppPrivateData *priv = MAIN_APP_GET_PRIVATE(G_APPLICATION (context));
+	//printf("Button %u down on device %u at %f with context %p\n", buttonID, device->deviceID, timestamp, context);
+	SDL_JoyButtonEvent event;
+	memset(&event, 0, sizeof(event));
+	event.timestamp = SDL_GetTicks();
+	event.type = SDL_JOYBUTTONDOWN;
+	event.which = 0;
+	event.button = buttonID;
+	event.state = SDL_PRESSED;
+	SDL_PushEvent((SDL_Event*)&event);
+}
+
+void Gamepad::onButtonUp(struct Gamepad_device * device, unsigned int buttonID, double timestamp, void * context) {
+	//MainAppPrivateData *priv = MAIN_APP_GET_PRIVATE(G_APPLICATION (context));
+	//printf("Button %u up on device %u at %f with context %p\n", buttonID, device->deviceID, timestamp, context);
+	SDL_JoyButtonEvent event;
+	memset(&event, 0, sizeof(event));
+	event.timestamp = SDL_GetTicks();
+	event.type = SDL_JOYBUTTONUP;
+	event.which = 0;
+	event.button = buttonID;
+	event.state = SDL_RELEASED;
+	SDL_PushEvent((SDL_Event*)&event);
+}
+
+void Gamepad::onAxisMoved(struct Gamepad_device * device, unsigned int axisID, float value, float lastValue, double timestamp, void * context) {
+	//MainAppPrivateData *priv = MAIN_APP_GET_PRIVATE(G_APPLICATION (context));
+	//printf("Axis %u moved from %f to %f on device %u at %f with context %p\n", axisID, lastValue, value, device->deviceID, timestamp, context);
+	SDL_JoyAxisEvent event;
+	memset(&event, 0, sizeof(event));
+	event.timestamp = SDL_GetTicks();
+	event.type = SDL_JOYAXISMOTION;
+	event.which = 0;
+	event.axis = axisID;
+	event.value = roundl(value * 32767);
+	SDL_PushEvent((SDL_Event*)&event);
+}
+
+void Gamepad::onDeviceAttached(struct Gamepad_device * device, void * context) {
+	//MainAppPrivateData *priv = MAIN_APP_GET_PRIVATE(G_APPLICATION (context));
+	//printf("Device ID %u attached (vendor = 0x%X; product = 0x%X) with context %p\n", device->deviceID, device->vendorID, device->productID, context);
+}
+
+void Gamepad::onDeviceRemoved(struct Gamepad_device * device, void * context) {
+	//MainAppPrivateData *priv = MAIN_APP_GET_PRIVATE(G_APPLICATION (context));
+	//printf("Device ID %u removed with context %p\n", device->deviceID, context);
+}
+
+void Gamepad::initGamepad(void * context) {
+	Gamepad_deviceAttachFunc(onDeviceAttached, context);
+	Gamepad_deviceRemoveFunc(onDeviceRemoved, context);
+	Gamepad_buttonDownFunc(onButtonDown, context);
+	Gamepad_buttonUpFunc(onButtonUp, context);
+	Gamepad_axisMoveFunc(onAxisMoved, context);
+	Gamepad_init();
+}
+
+void Gamepad::shutdownGamepad() {
+	Gamepad_shutdown();
+}
+
 void MainApp::setup(GApplication * app) {
 	MainAppPrivateData *priv = MAIN_APP_GET_PRIVATE(app);
 
@@ -473,6 +548,8 @@ void MainApp::setup(GApplication * app) {
 	gtk_text_buffer_set_text(log_buffer, log_text, -1);
 	gtk_text_buffer_set_modified(log_buffer, FALSE);
 	gtk_widget_set_sensitive(priv->log_widget, TRUE);
+
+	Gamepad::initGamepad((void *)priv);
 
 	priv->sdl_app->init(
 		priv->sdl_window,
@@ -492,6 +569,8 @@ void MainApp::cleanup(GtkApplication * app) {
 	}
 
 	priv->sdl_app->destroy();
+
+	Gamepad::shutdownGamepad();
 }
 
 void MainApp::createFromFile(GApplication * app, GFile * file) {

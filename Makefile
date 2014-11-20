@@ -17,9 +17,9 @@ PKG_CONFIG_CFLAGS=`pkg-config --cflags $(PKG_CONFIG)`
 PKG_CONFIG_LIBS=`pkg-config --libs $(PKG_CONFIG)`
 
 CFLAGS= -O2 -g -Wall
-INCS=-I. -Islmath/include
+INCS=-I. -Islmath/include -Igamepad/include
 LDFLAGS= -Wl,-z,defs -Wl,--as-needed -Wl,--no-undefined
-LIBS=$(PKG_CONFIG_LIBS) -lSDL2_image -lSDL2_gfx -lpthread -lm -Lslmath -lslmath
+LIBS=$(PKG_CONFIG_LIBS) -lSDL2_image -lSDL2_gfx -lpthread -lm -Lslmath -lslmath -Lgamepad -lgamepad
 
 $(PROGRAM): $(OBJS) slmath/libslmath.a
 	g++ $(LDFLAGS) $(OBJS) -o $@ $(LIBS)

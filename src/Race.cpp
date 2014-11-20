@@ -686,22 +686,32 @@ bool Race::eventHandlerJoystick(SDL_Event & event) {
 	switch(event.type) {
 		case SDL_JOYBUTTONDOWN:
 		case SDL_JOYBUTTONUP: {
-			//printf("JOY%d.BUTTON%d: %s\n", event.button.which, event.button.button, (event.button.state == SDL_PRESSED) ? "DOWN" : "UP");
+			printf("JOY%d.BUTTON%d: %s\n", event.button.which, event.button.button, (event.button.state == SDL_PRESSED) ? "DOWN" : "UP");
 			return true;
 		}
 
 		case SDL_JOYAXISMOTION: {
-			//printf("JOY%d.AXIS%d: %d\n", event.jaxis.which, event.jaxis.axis, event.jaxis.value);
+			printf("JOY%d.AXIS%d: %d\n", event.jaxis.which, event.jaxis.axis, event.jaxis.value);
+			if (0 == event.jaxis.axis) {
+				if (-1000 > event.jaxis.value) { mLeftKey = true; mRightKey = false; }
+				else if (1000 < event.jaxis.value) { mLeftKey = false; mRightKey = true; }
+				else { mLeftKey = false; mRightKey = false; }
+			}
+			if (1 == event.jaxis.axis) {
+				if (-1000 > event.jaxis.value) { mUpKey = true; mDownKey = false; }
+				else if (1000 < event.jaxis.value) { mUpKey = false; mDownKey = true; }
+				else { mUpKey = false; mDownKey = false; }
+			}
 			return true;
 		}
 
 		case SDL_JOYHATMOTION: {
-			//printf("JOY%d.PAD%d: %d\n", event.jhat.which, event.jhat.hat, event.jhat.value);
+			printf("JOY%d.PAD%d: %d\n", event.jhat.which, event.jhat.hat, event.jhat.value);
 			return true;
 		}
 
 		case SDL_JOYBALLMOTION: {
-			//printf("JOY%d.BALL%d: %d, %d\n", event.jball.which, event.jball.ball, event.jball.xrel, event.jball.yrel);
+			printf("JOY%d.BALL%d: %d, %d\n", event.jball.which, event.jball.ball, event.jball.xrel, event.jball.yrel);
 			return true;
 		}
 
