@@ -165,28 +165,30 @@ private:
 		float pos_x;
 		float pos_y;
 		float pos_z;
-		float ang_yaw;
-		float ang_pitch;
-		float ang_roll;
 		float spd_x;
 		float spd_y;
 		float spd_z;
 		float acc_x;
 		float acc_y;
 		float acc_z;
+
+		float ang_yaw; // rotation around vertical axis
+		float ang_pitch; // rotation around axis orthogonal to movement
+		float ang_roll; // rotation around axis in direction of movement
+
 		State() :
 			pos_x(0),
 			pos_y(0),
 			pos_z(0),
-			ang_yaw(0),
-			ang_pitch(0),
-			ang_roll(0),
 			spd_x(0),
 			spd_y(0),
 			spd_z(0),
 			acc_x(0),
 			acc_y(0),
-			acc_z(0)
+			acc_z(0),
+			ang_yaw(0),
+			ang_pitch(0),
+			ang_roll(0)
 		{
 		}
 	};
