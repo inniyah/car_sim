@@ -43,9 +43,9 @@ public:
 		global_time_ms = 0;
 		inc_time_ms    = 0;
 	}
-	void setSize(int w, int h) {
+	void setSize(int l, int w) {
+		length        = l;
 		width         = w;
-		height        = h;
 	}
 	void setPosition(float x, float y, float azimut) {
 		now.pos_x     = x;
@@ -118,11 +118,11 @@ public:
 	float getSpeedZ() {
 		return now.spd_z;
 	}
-	float getH() {
-		return height;
-	}
-	float getW() {
+	float getWidth() {
 		return width;
+	}
+	float getLength() {
+		return length;
 	}
 	float getYaw() {
 		return now.ang_yaw;
@@ -158,7 +158,8 @@ private:
 
 	static void drawRawLight(SDL_Renderer * renderer, int x, int y, int r);
 
-	int width, height;
+	int length;
+	int width;
 
 	struct State {
 		float pos_x;

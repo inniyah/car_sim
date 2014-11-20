@@ -292,32 +292,32 @@ void Car::drawRawLight(SDL_Renderer * renderer, int x, int y, int r) {
 
 void Car::drawBrakeLights(SDL_Renderer * renderer) {
 	SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255); // Red
-	drawRawLight(renderer, now.pos_x + cos(now.ang_yaw) * width/3 - sin(now.ang_yaw)*4, now.pos_y + sin(now.ang_yaw) * height/3 + cos(now.ang_yaw)*4, 3);
-	drawRawLight(renderer, now.pos_x + cos(now.ang_yaw) * width/3 + sin(now.ang_yaw)*4, now.pos_y + sin(now.ang_yaw) * height/3 - cos(now.ang_yaw)*4, 3);
+	drawRawLight(renderer, now.pos_x + cos(now.ang_yaw) * length/3 - sin(now.ang_yaw)*4, now.pos_y + sin(now.ang_yaw) * width/3 + cos(now.ang_yaw)*4, 3);
+	drawRawLight(renderer, now.pos_x + cos(now.ang_yaw) * length/3 + sin(now.ang_yaw)*4, now.pos_y + sin(now.ang_yaw) * width/3 - cos(now.ang_yaw)*4, 3);
 }
 
 void Car::drawReversingLights(SDL_Renderer * renderer) {
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // White
-	drawRawLight(renderer, now.pos_x + cos(now.ang_yaw) * width/3 - sin(now.ang_yaw)*4, now.pos_y + sin(now.ang_yaw) * height/3 + cos(now.ang_yaw)*4, 3);
-	drawRawLight(renderer, now.pos_x + cos(now.ang_yaw) * width/3 + sin(now.ang_yaw)*4, now.pos_y + sin(now.ang_yaw) * height/3 - cos(now.ang_yaw)*4, 3);
+	drawRawLight(renderer, now.pos_x + cos(now.ang_yaw) * length/3 - sin(now.ang_yaw)*4, now.pos_y + sin(now.ang_yaw) * width/3 + cos(now.ang_yaw)*4, 3);
+	drawRawLight(renderer, now.pos_x + cos(now.ang_yaw) * length/3 + sin(now.ang_yaw)*4, now.pos_y + sin(now.ang_yaw) * width/3 - cos(now.ang_yaw)*4, 3);
 }
 
 void Car::drawWarningLights(SDL_Renderer * renderer) {
 	SDL_SetRenderDrawColor(renderer, 255, 200, 0, 255); // Orange
-	drawRawLight(renderer, now.pos_x - cos(now.ang_yaw) * width/3 - sin(now.ang_yaw)*5, now.pos_y - sin(now.ang_yaw) * height/3 + cos(now.ang_yaw)*5, 2);
-	drawRawLight(renderer, now.pos_x - cos(now.ang_yaw) * width/3 + sin(now.ang_yaw)*5, now.pos_y - sin(now.ang_yaw) * height/3 - cos(now.ang_yaw)*5, 2);
-	drawRawLight(renderer, now.pos_x + cos(now.ang_yaw) * width/3 - sin(now.ang_yaw)*5, now.pos_y + sin(now.ang_yaw) * height/3 + cos(now.ang_yaw)*5, 2);
-	drawRawLight(renderer, now.pos_x + cos(now.ang_yaw) * width/3 + sin(now.ang_yaw)*5, now.pos_y + sin(now.ang_yaw) * height/3 - cos(now.ang_yaw)*5, 2);
+	drawRawLight(renderer, now.pos_x - cos(now.ang_yaw) * length/3 - sin(now.ang_yaw)*5, now.pos_y - sin(now.ang_yaw) * width/3 + cos(now.ang_yaw)*5, 2);
+	drawRawLight(renderer, now.pos_x - cos(now.ang_yaw) * length/3 + sin(now.ang_yaw)*5, now.pos_y - sin(now.ang_yaw) * width/3 - cos(now.ang_yaw)*5, 2);
+	drawRawLight(renderer, now.pos_x + cos(now.ang_yaw) * length/3 - sin(now.ang_yaw)*5, now.pos_y + sin(now.ang_yaw) * width/3 + cos(now.ang_yaw)*5, 2);
+	drawRawLight(renderer, now.pos_x + cos(now.ang_yaw) * length/3 + sin(now.ang_yaw)*5, now.pos_y + sin(now.ang_yaw) * width/3 - cos(now.ang_yaw)*5, 2);
 }
 
 void Car::drawPositionLights(SDL_Renderer * renderer) {
 	if (position_lights) {
 		SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255); // Red
-		drawRawLight(renderer, now.pos_x + cos(now.ang_yaw) * width/3 - sin(now.ang_yaw)*3, now.pos_y + sin(now.ang_yaw) * height/3 + cos(now.ang_yaw)*4, 2);
-		drawRawLight(renderer, now.pos_x + cos(now.ang_yaw) * width/3 + sin(now.ang_yaw)*3, now.pos_y + sin(now.ang_yaw) * height/3 - cos(now.ang_yaw)*4, 2);
+		drawRawLight(renderer, now.pos_x + cos(now.ang_yaw) * length/3 - sin(now.ang_yaw)*3, now.pos_y + sin(now.ang_yaw) * width/3 + cos(now.ang_yaw)*4, 2);
+		drawRawLight(renderer, now.pos_x + cos(now.ang_yaw) * length/3 + sin(now.ang_yaw)*3, now.pos_y + sin(now.ang_yaw) * width/3 - cos(now.ang_yaw)*4, 2);
 		SDL_SetRenderDrawColor(renderer, 255, 255, 100, 255); // Yellow
-		drawRawLight(renderer, now.pos_x - cos(now.ang_yaw) * width/3 - sin(now.ang_yaw)*4, now.pos_y - sin(now.ang_yaw) * height/3 + cos(now.ang_yaw)*4, 3);
-		drawRawLight(renderer, now.pos_x - cos(now.ang_yaw) * width/3 + sin(now.ang_yaw)*4, now.pos_y - sin(now.ang_yaw) * height/3 - cos(now.ang_yaw)*4, 3);
+		drawRawLight(renderer, now.pos_x - cos(now.ang_yaw) * length/3 - sin(now.ang_yaw)*4, now.pos_y - sin(now.ang_yaw) * width/3 + cos(now.ang_yaw)*4, 3);
+		drawRawLight(renderer, now.pos_x - cos(now.ang_yaw) * length/3 + sin(now.ang_yaw)*4, now.pos_y - sin(now.ang_yaw) * width/3 - cos(now.ang_yaw)*4, 3);
 	}
 }
 
@@ -341,10 +341,10 @@ bool Race::draw() {
 	SDL_RenderCopy(mxSdlRenderer, mpSdlTextureCircuit, NULL, &circ_rect);
 
 	SDL_Rect car_rect;
-	car_rect.x = car.getPosX() - car.getW()/2;
-	car_rect.y = car.getPosY() - car.getH()/2;
-	car_rect.w = car.getW();
-	car_rect.h = car.getH();
+	car_rect.x = car.getPosX() - car.getLength()/2;
+	car_rect.y = car.getPosY() - car.getWidth()/2;
+	car_rect.w = car.getLength();
+	car_rect.h = car.getWidth();
 
 	unsigned char car_angle = (unsigned char)(256 * car.getYaw() / 2.0 / M_PI) % 256;
 	SDL_Texture  * car_texture = SDL_CreateTextureFromSurface(mxSdlRenderer, mpaSdlSurfaceCars[miCarId][car_angle]);
@@ -389,39 +389,39 @@ void Race::moveCar(unsigned int milliseconds) {
 	// get the pixel color under the center of car in the function map
 	c = sdlGetPixel(mpSdlSurfaceFunction, center_x, center_y);
 
-	// red layer = checkpoints; green layer = road quality; blue = height
+	// red layer = checkpoints; green layer = road quality; blue = map height
 	SDL_GetRGB(c, mpSdlSurfaceFunction->format, &center_r, &center_g, &center_b);
 
-	float angle = car.getYaw();
-	float width = car.getW();
-	float height = car.getH();
+	float angle  = car.getYaw();
+	float length = car.getLength();
+	float width  = car.getWidth();
 
-	float left_back_x = center_x + cos(angle) * width/3 - sin(angle)*3;
-	float left_back_y = center_y + sin(angle) * height/3 + cos(angle)*4;
+	float left_back_x = center_x + cos(angle) * length/3 - sin(angle)*3;
+	float left_back_y = center_y + sin(angle) * width/3 + cos(angle)*4;
 	c = sdlGetPixel(mpSdlSurfaceFunction, left_back_x, left_back_y);
 	Uint8 left_back_r, left_back_g, left_back_b;
 	SDL_GetRGB(c, mpSdlSurfaceFunction->format, &left_back_r, &left_back_g, &left_back_b);
 
-	float right_back_x = center_x + cos(angle) * width/3 + sin(angle)*3;
-	float right_back_y = center_y + sin(angle) * height/3 - cos(angle)*4;
+	float right_back_x = center_x + cos(angle) * length/3 + sin(angle)*3;
+	float right_back_y = center_y + sin(angle) * width/3 - cos(angle)*4;
 	c = sdlGetPixel(mpSdlSurfaceFunction, right_back_x, right_back_y);
 	Uint8 right_back_r, right_back_g, right_back_b;
 	SDL_GetRGB(c, mpSdlSurfaceFunction->format, &right_back_r, &right_back_g, &right_back_b);
 
-	float left_front_x = center_x - cos(angle) * width/3 - sin(angle)*4;
-	float left_front_y = center_y - sin(angle) * height/3 + cos(angle)*4;
+	float left_front_x = center_x - cos(angle) * length/3 - sin(angle)*4;
+	float left_front_y = center_y - sin(angle) * width/3 + cos(angle)*4;
 	c = sdlGetPixel(mpSdlSurfaceFunction, left_front_x, left_front_y);
 	Uint8 left_front_r, left_front_g, left_front_b;
 	SDL_GetRGB(c, mpSdlSurfaceFunction->format, &left_front_r, &left_front_g, &left_front_b);
 
-	float right_front_x = center_x - cos(angle) * width/3 + sin(angle)*4;
-	float right_front_y = center_y - sin(angle) * height/3 - cos(angle)*4;
+	float right_front_x = center_x - cos(angle) * length/3 + sin(angle)*4;
+	float right_front_y = center_y - sin(angle) * width/3 - cos(angle)*4;
 	c = sdlGetPixel(mpSdlSurfaceFunction, right_front_x, right_front_y);
 	Uint8 right_front_r, right_front_g, right_front_b;
 	SDL_GetRGB(c, mpSdlSurfaceFunction->format, &right_front_r, &right_front_g, &right_front_b);
 
-	float pitch_m = ( ( left_front_b + right_front_b - left_back_b - right_back_b ) * Z_UNIT_TO_M ) / ( ( 2.0 * width ) * XY_UNIT_TO_M );
-	float roll_m  = ( ( left_front_b + left_back_b - right_front_b - right_back_b)  * Z_UNIT_TO_M ) / ( ( 2.0 * height) * XY_UNIT_TO_M );
+	float pitch_m = ( ( left_front_b + right_front_b - left_back_b - right_back_b ) * Z_UNIT_TO_M ) / ( ( 2.0 * length ) * XY_UNIT_TO_M );
+	float roll_m  = ( ( left_front_b + left_back_b - right_front_b - right_back_b)  * Z_UNIT_TO_M ) / ( ( 2.0 * width) * XY_UNIT_TO_M );
 	float pitch   = atan( pitch_m );
 	float roll    = atan( roll_m );
 
@@ -458,7 +458,7 @@ void Race::moveCar(unsigned int milliseconds) {
 	car.computeNewPosition(milliseconds);
 
 	// collision with the border of the screen
-	float radius = ( car.getH() < car.getW() ? car.getW() : car.getH() ) / 2.0;
+	float radius = ( car.getWidth() < car.getLength() ? car.getLength() : car.getWidth() ) / 2.0;
 	if (
 		car.getPosX() < radius ||
 		car.getPosX() > mpSdlSurfaceFunction->w - radius ||
@@ -501,8 +501,8 @@ void Race::moveCar(unsigned int milliseconds) {
 
 			float x = car.getPosX();
 			float y = car.getPosY();
-			float w = car.getW();
-			float h = car.getH();
+			float w = car.getLength();
+			float h = car.getWidth();
 			float angle = car.getYaw();
 			float cos_a = cos(angle);
 			float sin_a = sin(angle);
