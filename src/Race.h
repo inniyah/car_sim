@@ -36,7 +36,7 @@ public:
 	int lapflag, crashflag;
 	int color;
 
-	Car() : position_lights(true) {
+	Car() {
 	}
 
 	void resetTimer() {
@@ -138,6 +138,9 @@ public:
 	}
 	unsigned int getTimer() {
 		return global_time_ms;
+	}
+	void togglePositionLights() {
+		position_lights = !position_lights;
 	}
 
 	void updateTimer(unsigned int milliseconds);
@@ -268,6 +271,12 @@ private:
 	Car car;
 	bool show_tires;
 	SDL_Surface * mpaSdlSurfaceCars[NB_CARS][256];
+
+	static const float JOY_AXIS_MIN_THRESHOLD = 0.01;
+	static const float JOY_AXIS_BRAKE_THRESHOLD = 0.9;
+
+	float mLeftRightJoyAxis;
+	float mUpDownJoyAxis;
 
 	bool mUpKey;
 	bool mDownKey;

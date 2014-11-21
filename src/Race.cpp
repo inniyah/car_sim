@@ -127,6 +127,8 @@ Race::Race() :
 	miTrackId(0),
 	miCarId(0),
 	show_tires(true),
+	mLeftRightJoyAxis(0),
+	mUpDownJoyAxis(0),
 	mUpKey(false),
 	mDownKey(false),
 	mLeftKey(false),
@@ -243,6 +245,9 @@ void Race::startTrack(int id) {
 
 	mpSdlTextureCircuit = SDL_CreateTextureFromSurface(mxSdlRenderer, mpSdlSurfaceCircuit);
 
+	mLeftRightJoyAxis = 0;
+	mUpDownJoyAxis = 0;
+
 	mUpKey = false;
 	mDownKey = false;
 	mLeftKey = false;
@@ -358,7 +363,7 @@ bool Race::draw() {
 		car.drawPositionLights(mxSdlRenderer);
 	}
 
-	if ( mDownKey && car.getInertiaCoef() > 0.1 ) {
+	if ( (mUpDownJoyAxis > JOY_AXIS_BRAKE_THRESHOLD) && car.getInertiaCoef() > 0.1 ) {
 		car.drawBrakeLights(mxSdlRenderer);
 	}
 
@@ -430,17 +435,17 @@ void Race::moveCar(unsigned int milliseconds) {
 	car.incYaw( roll_m * car.getInertiaCoef() * 0.05 );
 	car.incInertiaCoef( -pitch_m * 0.01 );
 
-	if (mUpKey) {
-		car.incInertiaCoef( 0.01 * 2. );
+	if (mUpDownJoyAxis < -JOY_AXIS_MIN_THRESHOLD) {
+		car.incInertiaCoef( (-mUpDownJoyAxis) * 0.01 * 2. );
 	}
-	if (mDownKey) {
-		car.decInertiaCoef( 0.01 );
+	if (mUpDownJoyAxis > JOY_AXIS_MIN_THRESHOLD) {
+		car.decInertiaCoef( mUpDownJoyAxis * 0.01 );
 	}
-	if (mLeftKey) {
-		car.turnLeft( 0.01 );
+	if (mLeftRightJoyAxis < -JOY_AXIS_MIN_THRESHOLD) {
+		car.turnLeft( (-mLeftRightJoyAxis) * 0.01 );
 	}
-	if (mRightKey) {
-		car.turnRight( 0.01 );
+	if (mLeftRightJoyAxis > JOY_AXIS_MIN_THRESHOLD) {
+		car.turnRight( mLeftRightJoyAxis * 0.01 );
 	}
 
 	// update the inertia_coef depending on the road quality
@@ -496,7 +501,10 @@ void Race::moveCar(unsigned int milliseconds) {
 		car.lapflag = 2;
 	}
 
-	if ((mDownKey && car.getInertiaCoef()>0.5) || (car.getInertiaCoef()>2.0 && !mUpKey)) { // if the car is fast or braking, it slides
+	if (
+		( car.getInertiaCoef()>0.5 && (mUpDownJoyAxis > JOY_AXIS_BRAKE_THRESHOLD) ) ||
+		( car.getInertiaCoef()>2.0 && !(mUpDownJoyAxis < -JOY_AXIS_MIN_THRESHOLD) )
+	) { // if the car is fast or braking, it slides
 		if (show_tires) { // display tires slide
 
 			float x = car.getPosX();
@@ -517,7 +525,7 @@ void Race::moveCar(unsigned int milliseconds) {
 				y + sin_a * h/3 - cos_a*4,
 				SDL_MapRGB(mpSdlSurfaceCircuit->format,0,0,0) // black
 			);
-			if (mDownKey) { // if we are braking the slide is larger
+			if (mUpDownJoyAxis > JOY_AXIS_BRAKE_THRESHOLD) { // if we are braking the slide is larger
 				sdlPutPixel(mpSdlSurfaceCircuit,
 					x + cos_a * w/3 - sin_a*3,
 					y + sin_a * h/3 + cos_a*3,
@@ -619,10 +627,15 @@ bool Race::eventHandlerKeyboard(SDL_Event & event) {
 				default:
 					return false;
 			}
+			mUpDownJoyAxis    = ( mDownKey  ? 1.0 : 0.0 ) - ( mUpKey   ? 1.0 : 0.0 );
+			mLeftRightJoyAxis = ( mRightKey ? 1.0 : 0.0 ) - ( mLeftKey ? 1.0 : 0.0 );
 			return true;
 		}
 		case SDL_KEYUP: {
 			switch (event.key.keysym.sym) {
+				case SDLK_SPACE:
+					car.togglePositionLights();
+					break;
 				case SDLK_UP:
 					mUpKey = false;
 					break;
@@ -638,11 +651,14 @@ bool Race::eventHandlerKeyboard(SDL_Event & event) {
 				default:
 					return false;
 			}
+			mUpDownJoyAxis    = ( mDownKey  ? 1.0 : 0.0 ) - ( mUpKey   ? 1.0 : 0.0 );
+			mLeftRightJoyAxis = ( mRightKey ? 1.0 : 0.0 ) - ( mLeftKey ? 1.0 : 0.0 );
 			return true;
 		}
 		default:
 			return false;
 	}
+	return true;
 }
 
 bool Race::eventHandlerMouse(SDL_Event & event) {
@@ -693,14 +709,22 @@ bool Race::eventHandlerJoystick(SDL_Event & event) {
 		case SDL_JOYAXISMOTION: {
 			printf("JOY%d.AXIS%d: %d\n", event.jaxis.which, event.jaxis.axis, event.jaxis.value);
 			if (0 == event.jaxis.axis) {
-				if (-1000 > event.jaxis.value) { mLeftKey = true; mRightKey = false; }
-				else if (1000 < event.jaxis.value) { mLeftKey = false; mRightKey = true; }
-				else { mLeftKey = false; mRightKey = false; }
+				mLeftRightJoyAxis = event.jaxis.value / 32767.0;
+				if (mLeftRightJoyAxis < -1.0) {
+					mLeftRightJoyAxis = -1.0;
+				}
+				if (mLeftRightJoyAxis > 1.0) {
+					mLeftRightJoyAxis = 1.0;
+				}
 			}
 			if (1 == event.jaxis.axis) {
-				if (-1000 > event.jaxis.value) { mUpKey = true; mDownKey = false; }
-				else if (1000 < event.jaxis.value) { mUpKey = false; mDownKey = true; }
-				else { mUpKey = false; mDownKey = false; }
+				mUpDownJoyAxis = event.jaxis.value / 32767.0;
+				if (mUpDownJoyAxis < -1.0) {
+					mUpDownJoyAxis = -1.0;
+				}
+				if (mUpDownJoyAxis > 1.0) {
+					mUpDownJoyAxis = 1.0;
+				}
 			}
 			return true;
 		}

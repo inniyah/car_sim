@@ -478,7 +478,7 @@ void Gamepad::onButtonDown(struct Gamepad_device * device, unsigned int buttonID
 	memset(&event, 0, sizeof(event));
 	event.timestamp = SDL_GetTicks();
 	event.type = SDL_JOYBUTTONDOWN;
-	event.which = 0;
+	event.which = device->deviceID;
 	event.button = buttonID;
 	event.state = SDL_PRESSED;
 	SDL_PushEvent((SDL_Event*)&event);
@@ -491,7 +491,7 @@ void Gamepad::onButtonUp(struct Gamepad_device * device, unsigned int buttonID, 
 	memset(&event, 0, sizeof(event));
 	event.timestamp = SDL_GetTicks();
 	event.type = SDL_JOYBUTTONUP;
-	event.which = 0;
+	event.which = device->deviceID;
 	event.button = buttonID;
 	event.state = SDL_RELEASED;
 	SDL_PushEvent((SDL_Event*)&event);
@@ -504,7 +504,7 @@ void Gamepad::onAxisMoved(struct Gamepad_device * device, unsigned int axisID, f
 	memset(&event, 0, sizeof(event));
 	event.timestamp = SDL_GetTicks();
 	event.type = SDL_JOYAXISMOTION;
-	event.which = 0;
+	event.which = device->deviceID;
 	event.axis = axisID;
 	event.value = roundl(value * 32767);
 	SDL_PushEvent((SDL_Event*)&event);
