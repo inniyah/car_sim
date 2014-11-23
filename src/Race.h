@@ -31,9 +31,9 @@
 
 class Car {
 public:
-
-	int lastcheck, lap;
-	int lapflag, crashflag;
+	int lap;
+	int lapflag;
+	int crashflag;
 	int color;
 
 	Car() {
@@ -133,6 +133,16 @@ public:
 	float getRoll() {
 		return now.ang_roll;
 	}
+	int getCurrentCheckpoint() {
+		return current_checkpoint;
+	}
+	int getLastCheckpoint() {
+		return last_checkpoint;
+	}
+	void cleanCheckpoints() {
+		current_checkpoint = 0;
+		last_checkpoint = 0;
+	}
 	float getInertiaCoef() {
 		return inertia_coef;
 	}
@@ -143,6 +153,7 @@ public:
 		position_lights = !position_lights;
 	}
 
+	void updateCheckpoints(int cp);
 	void updateTimer(unsigned int milliseconds);
 	void drawBrakeLights(SDL_Renderer * renderer);
 	void drawReversingLights(SDL_Renderer * renderer);
@@ -198,6 +209,9 @@ private:
 
 	State now;
 	State before;
+
+	int current_checkpoint;
+	int last_checkpoint;
 
 	float inertia_coef;
 	bool position_lights;

@@ -259,7 +259,7 @@ void Race::startTrack(int id) {
 	car.resetTimer();
 	car.backupPosition();
 
-	car.lastcheck = 0;
+	car.cleanCheckpoints();
 	car.lapflag = 0;
 }
 
@@ -381,6 +381,36 @@ bool Race::draw() {
 	return true;
 }
 
+void Car::updateCheckpoints(int chkpnt) {
+	// if we are on the next checkpoint, validate it
+	if (chkpnt == last_checkpoint + 1) {
+		if (lapflag==3) { // If we validate a missed checkpoint
+			lapflag=4;
+		}
+		++last_checkpoint;
+	}
+
+	// if we missed a checkpoint
+	if ((chkpnt > last_checkpoint + 1) && (last_checkpoint != 0)) {
+		lapflag = 3;
+	}
+
+	// if we validate all and start over, we complete a turn
+	if (chkpnt == 0 && last_checkpoint == 31) { // reset turn variables
+		last_checkpoint = 0;
+		++lap;
+		lapflag = 1;
+	}
+
+	// if we are at the start but not each checkpoint validate, it's an incomplete lap
+	if (chkpnt == 0 && chkpnt !=0 && last_checkpoint != 31 && last_checkpoint > 0) {
+		last_checkpoint = 0;
+		lapflag = 2;
+	}
+
+	current_checkpoint = chkpnt;
+}
+
 void Race::moveCar(unsigned int milliseconds) {
 	Uint32 c;
 
@@ -442,10 +472,10 @@ void Race::moveCar(unsigned int milliseconds) {
 		car.decInertiaCoef( mUpDownJoyAxis * 0.01 );
 	}
 	if (mLeftRightJoyAxis < -JOY_AXIS_MIN_THRESHOLD) {
-		car.turnLeft( (-mLeftRightJoyAxis) * 0.01 );
+		car.turnLeft( (-mLeftRightJoyAxis) * 0.02 );
 	}
 	if (mLeftRightJoyAxis > JOY_AXIS_MIN_THRESHOLD) {
-		car.turnRight( mLeftRightJoyAxis * 0.01 );
+		car.turnRight( mLeftRightJoyAxis * 0.02 );
 	}
 
 	// update the inertia_coef depending on the road quality
@@ -475,31 +505,7 @@ void Race::moveCar(unsigned int milliseconds) {
 		car.crashflag = 1;
 	}
 
-	// if we are on the next checkpoint, validate it
-	if (center_r/8 == car.lastcheck + 1) {
-		if (car.lapflag==3) { // If we validate a missed checkpoint
-			car.lapflag=4;
-		}
-		car.lastcheck++;
-	}
-
-	// if we missed a checkpoint
-	if ((center_r/8 > car.lastcheck+1) && (car.lastcheck != 0)) {
-		car.lapflag = 3;
-	}
-
-	// if we validate all and start over, we complete a turn
-	if (center_r/8 == 0 && car.lastcheck == 31) { // reset turn variables
-		car.lastcheck = 0;
-		car.lap++;
-		car.lapflag = 1;
-	}
-
-	// if we are at the start but not each checkpoint validate, it's an incomplete lap
-	if (center_r/8 == 0 && center_r !=0 && car.lastcheck != 31 && car.lastcheck > 0) {
-		car.lastcheck = 0;
-		car.lapflag = 2;
-	}
+	car.updateCheckpoints(center_r/8);
 
 	if (
 		( car.getInertiaCoef()>0.5 && (mUpDownJoyAxis > JOY_AXIS_BRAKE_THRESHOLD) ) ||
@@ -708,7 +714,7 @@ bool Race::eventHandlerJoystick(SDL_Event & event) {
 
 		case SDL_JOYAXISMOTION: {
 			printf("JOY%d.AXIS%d: %d\n", event.jaxis.which, event.jaxis.axis, event.jaxis.value);
-			if (0 == event.jaxis.axis) {
+			if (/*0 == event.jaxis.axis ||*/ 3 == event.jaxis.axis) {
 				mLeftRightJoyAxis = event.jaxis.value / 32767.0;
 				if (mLeftRightJoyAxis < -1.0) {
 					mLeftRightJoyAxis = -1.0;
@@ -717,7 +723,7 @@ bool Race::eventHandlerJoystick(SDL_Event & event) {
 					mLeftRightJoyAxis = 1.0;
 				}
 			}
-			if (1 == event.jaxis.axis) {
+			if (1 == event.jaxis.axis /*|| 2 == event.jaxis.axis*/) {
 				mUpDownJoyAxis = event.jaxis.value / 32767.0;
 				if (mUpDownJoyAxis < -1.0) {
 					mUpDownJoyAxis = -1.0;
@@ -780,6 +786,12 @@ bool Race::getInfo(void * dest, unsigned int type, intptr_t param) {
 			f[0] = car.getYaw();
 			f[1] = car.getPitch();
 			f[2] = car.getRoll();
+			return true;
+		}
+		case INFO_CHECKPOINT_2I: {
+			int * i = (int*)dest;
+			i[0] = car.getCurrentCheckpoint();
+			i[1] = car.getLastCheckpoint();
 			return true;
 		}
 		default:

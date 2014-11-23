@@ -28,6 +28,9 @@ private:
 	GtkWidget  * mpWidgetYawAngle;
 	GtkWidget  * mpWidgetPitchAngle;
 	GtkWidget  * mpWidgetRollAngle;
+
+	GtkWidget  * mpWidgetLastCheckpoint;
+	GtkWidget  * mpWidgetCurrentCheckpoint;
 };
 
 #endif // SHOWINFO_H_FFA18220_6DEF_11E4_9C9B_10FEED04CD1C
