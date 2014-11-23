@@ -64,9 +64,9 @@ void InfoHandler::showInfo() {
 		gtk_label_set_text(GTK_LABEL(mpWidgetRollAngle), buff);
 	}
 	if (mxApp->getInfo(chk, INFO_CHECKPOINT_2I, 0)) {
-		snprintf(buff, sizeof(buff), "Last: %d", chk[0] );
-		gtk_label_set_text(GTK_LABEL(mpWidgetLastCheckpoint), buff);
-		snprintf(buff, sizeof(buff), "Curr: %d", chk[1] );
+		snprintf(buff, sizeof(buff), "Curr: %d", chk[0] );
 		gtk_label_set_text(GTK_LABEL(mpWidgetCurrentCheckpoint), buff);
+		snprintf(buff, sizeof(buff), "Last: %d", chk[1] );
+		gtk_label_set_text(GTK_LABEL(mpWidgetLastCheckpoint), buff);
 	}
 }
